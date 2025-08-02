@@ -11,6 +11,8 @@
   <a href="https://github.com/yet-another-tool/obsidian-findoc/issues">Report Bug</a>
   ·
   <a href="https://github.com/yet-another-tool/obsidian-findoc/issues">Request Feature</a>
+  ·
+  <a href="https://discord.gg/SseMxexTF6">Discord Support</a>
 </p>
 </div>
 
