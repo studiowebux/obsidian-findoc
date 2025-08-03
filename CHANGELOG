@@ -1,3 +1,13 @@
+### V0.7.3 - Beta - 2025-08-03
+
+- Updated default `style.css`
+- Added one regex to clean values
+- Fixed math evaluate that returns `undefined`
+
+### V0.7.2 - Beta - 2024-02-25
+
+- Fixed chart size, configurable in the `style.css`
+
 ### V0.7.1 - Beta - 2024-02-25
 
 -   Added `Sort by Date` button

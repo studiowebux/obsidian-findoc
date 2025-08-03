@@ -1,5 +1,5 @@
 import FinDocPlugin from "main";
-import { Notice, TextFileView, WorkspaceLeaf, debounce } from "obsidian";
+import { debounce, Notice, TextFileView, WorkspaceLeaf } from "obsidian";
 import { getToday } from "utils";
 import up from "icons/up";
 import down from "icons/down";
@@ -51,11 +51,11 @@ export class CSVView extends TextFileView {
 
 	match(
 		term: string,
-		inputs: { category: string; subcategory: string }[]
+		inputs: { category: string; subcategory: string }[],
 	): { category: string; subcategory: string }[] {
 		return inputs.filter(
 			(input: { category: string; subcategory: string }) =>
-				input.subcategory.toLowerCase().includes(term.toLowerCase())
+				input.subcategory.toLowerCase().includes(term.toLowerCase()),
 		);
 	}
 
@@ -89,7 +89,8 @@ export class CSVView extends TextFileView {
 
 				list.forEach((listItem) => {
 					const li = ul.createEl("li");
-					li.innerText = `${listItem.subcategory} (${listItem.category})`;
+					li.innerText =
+						`${listItem.subcategory} (${listItem.category})`;
 					li.onClickEvent((ev: MouseEvent) => {
 						input.innerText = listItem.subcategory;
 						this.updateSelectValue(tr, listItem.category);
@@ -123,7 +124,7 @@ export class CSVView extends TextFileView {
 		//
 		this.tableHeader = data[0];
 		const headers = this.tableHeader.split(
-			this.plugin.settings.csvSeparator
+			this.plugin.settings.csvSeparator,
 		);
 		const trHeaders = this.contentEl.createEl("tr");
 		headers.forEach((header) => {
@@ -158,12 +159,13 @@ export class CSVView extends TextFileView {
 					td.onblur = (_) => {
 						const input = td.innerText
 							.replaceAll(/<.*?>/g, "")
+							.replaceAll(/&(?:amp;)+nbsp;/g, "")
 							.replaceAll(
 								'&lt;br class="Apple-interchange-newline"&gt',
-								""
+								"",
 							);
 						try {
-							td.innerText = evaluate(input);
+							td.innerText = evaluate(input) ?? 0;
 						} catch (_) {
 							td.innerText = input;
 						}
@@ -266,7 +268,7 @@ export class CSVView extends TextFileView {
 		btn.onClickEvent(() => {
 			if (this.plugin.settings.useLastElementAsTemplate) {
 				this.addLine(
-					this.getLine(this.table.lastChild as HTMLTableRowElement)
+					this.getLine(this.table.lastChild as HTMLTableRowElement),
 				);
 			} else {
 				this.addLine([
@@ -289,7 +291,6 @@ export class CSVView extends TextFileView {
 				.split(new RegExp(/<td.*?>/))
 				.slice(1)
 				.filter((i) => !new RegExp(/<button.*?>.*<.*?>/).test(i))
-
 				.map((i, idx) => {
 					if (idx === 0) {
 						// Select (Dropdown)
@@ -306,20 +307,22 @@ export class CSVView extends TextFileView {
 							.split(/<div/)[2]
 							.replaceAll(/<.*?>/g, "")
 							.replaceAll(/(.*?)>/g, "") // unclosed html tag, due to the split
+							.replaceAll(/&(?:amp;)+nbsp;/g, "")
 							.replaceAll(
 								'&lt;br class="Apple-interchange-newline"&gt',
-								""
+								"",
 							);
 					} else if (idx === 2) {
 						// Value column only.
 						const input = i
 							.replaceAll(/<.*?>/g, "")
+							.replaceAll(/&(?:amp;)+nbsp;/g, "")
 							.replaceAll(
 								'&lt;br class="Apple-interchange-newline"&gt',
-								""
+								"",
 							);
 						try {
-							return evaluate(input);
+							return evaluate(input) ?? 0;
 						} catch (_) {
 							return input;
 						}
@@ -327,9 +330,10 @@ export class CSVView extends TextFileView {
 						// Input field
 						const input = i
 							.replaceAll(/<.*?>/g, "")
+							.replaceAll(/&(?:amp;)+nbsp;/g, "")
 							.replaceAll(
 								'&lt;br class="Apple-interchange-newline"&gt',
-								""
+								"",
 							);
 						return input;
 					}
@@ -343,11 +347,11 @@ export class CSVView extends TextFileView {
 			(a, b) =>
 				// by date
 				new Date(
-					a.split(this.plugin.settings.csvSeparator)[3]
+					a.split(this.plugin.settings.csvSeparator)[3],
 				).getTime() -
 				new Date(
-					b.split(this.plugin.settings.csvSeparator)[3]
-				).getTime()
+					b.split(this.plugin.settings.csvSeparator)[3],
+				).getTime(),
 		);
 	}
 
@@ -355,7 +359,7 @@ export class CSVView extends TextFileView {
 		const dates = this.tableData
 			.map((data) =>
 				new Date(
-					data.split(this.plugin.settings.csvSeparator)[3]
+					data.split(this.plugin.settings.csvSeparator)[3],
 				).getTime()
 			)
 			.filter((input) => !isNaN(input));
@@ -373,7 +377,7 @@ export class CSVView extends TextFileView {
 		btn.innerText = "Sort by Date";
 		btn.onClickEvent(() => {
 			this.tableData = this.sortByDate(this.getTableData()).filter(
-				(r) => r.length !== 0
+				(r) => r.length !== 0,
 			); // Clear empty lines
 
 			this.tableData = [this.tableHeader, ...this.tableData];
@@ -390,7 +394,8 @@ export class CSVView extends TextFileView {
 
 		const p = div.createEl("p");
 		const dates = this.getMinMaxDate();
-		p.innerText = `Rows Count: ${this.tableData.length}\n Min Date: ${dates.min}\n Max Date: ${dates.max}`;
+		p.innerText =
+			`Rows Count: ${this.tableData.length}\n Min Date: ${dates.min}\n Max Date: ${dates.max}`;
 		div.appendChild(p);
 
 		this.parent.appendChild(div);
@@ -414,16 +419,16 @@ export class CSVView extends TextFileView {
 				this.tableData
 					.map((subcategory) => ({
 						category: subcategory.split(
-							this.plugin.settings.csvSeparator
+							this.plugin.settings.csvSeparator,
 						)[0],
 						subcategory: subcategory.split(
-							this.plugin.settings.csvSeparator
+							this.plugin.settings.csvSeparator,
 						)[1],
 					}))
 					.map((item: { subcategory: string; category: string }) => [
 						item["subcategory"],
 						item,
-					])
+					]),
 			).values(),
 		];
 	}
@@ -436,7 +441,7 @@ export class CSVView extends TextFileView {
 	updateSelectValue(tr: HTMLTableRowElement, newValue: string) {
 		(tr.children.item(0).firstChild as HTMLSelectElement).setAttribute(
 			"value",
-			newValue
+			newValue,
 		);
 		(tr.children.item(0).firstChild as HTMLSelectElement).value = newValue;
 	}
@@ -471,12 +476,13 @@ export class CSVView extends TextFileView {
 				td.onblur = (_) => {
 					const input = td.innerText
 						.replaceAll(/<.*?>/g, "")
+						.replaceAll(/&(?:amp;)+nbsp;/g, "")
 						.replaceAll(
 							'&lt;br class="Apple-interchange-newline"&gt',
-							""
+							"",
 						);
 					try {
-						td.innerText = evaluate(input);
+						td.innerText = evaluate(input) ?? 0;
 					} catch (_) {
 						td.innerText = input;
 					}
@@ -507,18 +513,18 @@ export class CSVView extends TextFileView {
 						.split("\n")
 						.map((subcategory) => ({
 							category: subcategory.split(
-								this.plugin.settings.csvSeparator
+								this.plugin.settings.csvSeparator,
 							)[0],
 							subcategory: subcategory.split(
-								this.plugin.settings.csvSeparator
+								this.plugin.settings.csvSeparator,
 							)[1],
 						}))
 						.map(
 							(item: {
 								subcategory: string;
 								category: string;
-							}) => [item["subcategory"], item]
-						)
+							}) => [item["subcategory"], item],
+						),
 				).values(),
 			];
 		}

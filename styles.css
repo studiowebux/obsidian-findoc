@@ -1,9 +1,28 @@
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th,
+td {
+	padding: 10px;
+	text-align: left;
+	border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+	background-color: #828282;
+}
+
+table th,
+table td {
+	border: 1px solid #ccc;
+}
+
 .findoc-line-data {
-	border-color: white;
-	border: 1px solid;
 	padding: 5px;
 	text-align: center;
-	min-width: 150px;
+	max-width: 150px;
 }
 
 .findoc-btn-margin-top {
@@ -120,9 +139,15 @@
 	transition: max-height 0.5s ease-in-out;
 }
 
+/* * Canvas
+.chart-container {
+  position: relative;
+  height: 40vh;
+  width: 80vw;
+} */
+
 /** Canvas */
 .chart-container {
-	position: relative;
-	height: 40vh;
-	width: 80vw;
+	width: 60%;
+	margin: 0 auto;
 }

@@ -53,9 +53,11 @@
 -   [] Add more functions to process and analyze the data
 -   [POC] Add reports in table view
 
-### V0.7.2 - Beta - 2024-02-25
+### V0.7.3 - Beta - 2025-08-03
 
-- Fixed chart size, configurable in the `style.css`
+- Updated default `style.css`
+- Added one regex to clean values
+- Fixed math evaluate that returns `undefined`
 
 See [CHANGELOG](./CHANGELOG)
 
