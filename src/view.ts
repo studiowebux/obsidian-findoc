@@ -343,31 +343,44 @@ export class CSVView extends TextFileView {
 	}
 
 	sortByDate(data: string[]) {
-		return data.sort(
-			(a, b) =>
-				// by date
-				new Date(
-					a.split(this.plugin.settings.csvSeparator)[3],
-				).getTime() -
-				new Date(
-					b.split(this.plugin.settings.csvSeparator)[3],
-				).getTime(),
-		);
+		return data.sort((a, b) => {
+			const leftDateStr = a.split(this.plugin.settings.csvSeparator)[3];
+			const rightDateStr = b.split(this.plugin.settings.csvSeparator)[3];
+
+			const leftTime = new Date(leftDateStr).getTime();
+			const rightTime = new Date(rightDateStr).getTime();
+
+			// Handle NaN cases - invalid dates go to the end
+			if (isNaN(leftTime) && isNaN(rightTime)) return 0;
+			if (isNaN(leftTime)) return 1; // left goes to end
+			if (isNaN(rightTime)) return -1; // right goes to end
+
+			return leftTime - rightTime; // ascending order (oldest first)
+		});
 	}
 
 	getMinMaxDate() {
-		const dates = this.tableData
-			.map((data) =>
-				new Date(
-					data.split(this.plugin.settings.csvSeparator)[3],
-				).getTime()
-			)
-			.filter((input) => !isNaN(input));
+		try {
+			const dates = this.tableData
+				.filter((line) => line !== "")
+				.map((data) =>
+					new Date(
+						data.split(this.plugin.settings.csvSeparator)[3],
+					).getTime()
+				)
+				.filter((input) => !isNaN(input));
 
-		return {
-			min: new Date(Math.min(...dates)).toISOString().slice(0, 10),
-			max: new Date(Math.max(...dates)).toISOString().slice(0, 10),
-		};
+			return {
+				min: new Date(Math.min(...dates)).toISOString().slice(0, 10),
+				max: new Date(Math.max(...dates)).toISOString().slice(0, 10),
+			};
+		} catch (_) {
+			// When document is empty.
+			return {
+				min: new Date().toISOString().slice(0, 10),
+				max: new Date().toISOString().slice(0, 10),
+			};
+		}
 	}
 
 	createBtnSort() {

@@ -53,11 +53,9 @@
 -   [] Add more functions to process and analyze the data
 -   [POC] Add reports in table view
 
-### V0.7.3 - Beta - 2025-08-03
+### V0.7.4 - Beta - 2025-09-04
 
-- Updated default `style.css`
-- Added one regex to clean values
-- Fixed math evaluate that returns `undefined`
+- Fixed empty document and/or invalid date format
 
 See [CHANGELOG](./CHANGELOG)
 

@@ -1,3 +1,7 @@
+### V0.7.4 - Beta - 2025-09-04
+
+- Fixed empty document and/or invalid date format
+
 ### V0.7.3 - Beta - 2025-08-03
 
 - Updated default `style.css`
