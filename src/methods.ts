@@ -75,6 +75,97 @@ export const splitBy: { [key: string]: { help: string; exec: splitFunc } } = {
 			}, {});
 		},
 	},
+
+	splitByQuarter: {
+		help: "Split by quarter (Q1, Q2, Q3, Q4)",
+		exec: (input: Array<IInput | any>, key: IDataSourceKeys) => {
+			return input.reduce((acc, current) => {
+				const d = new Date(current[key]);
+				const quarter = Math.floor(d.getUTCMonth() / 3) + 1;
+				const timestamp = `${d.getUTCFullYear()}-Q${quarter}`;
+				if (!acc[timestamp]) {
+					acc[timestamp] = [];
+				}
+				acc[timestamp].push(current);
+				return acc;
+			}, {});
+		},
+	},
+
+	splitByWeek: {
+		help: "Split by week (ISO week number)",
+		exec: (input: Array<IInput | any>, key: IDataSourceKeys) => {
+			return input.reduce((acc, current) => {
+				const d = new Date(current[key]);
+				// Calculate ISO week number
+				const d1 = new Date(d);
+				d1.setHours(0, 0, 0, 0);
+				// Set to Thursday of this week (ISO week starts on Monday)
+				d1.setDate(d1.getDate() + 3 - (d1.getDay() + 6) % 7);
+				// Get first Thursday of year
+				const year = d1.getFullYear();
+				const d2 = new Date(year, 0, 4);
+				// Calculate week number
+				const weekNumber = Math.round((d1.getTime() - d2.getTime()) / 86400000 / 7) + 1;
+				const timestamp = `${year}-W${weekNumber.toString().padStart(2, '0')}`;
+				if (!acc[timestamp]) {
+					acc[timestamp] = [];
+				}
+				acc[timestamp].push(current);
+				return acc;
+			}, {});
+		},
+	},
+
+	splitBySubcategory: {
+		help: "Split by subcategory",
+		exec: (input: Array<IInput | any>, key: IDataSourceKeys) => {
+			return input.reduce((acc, current) => {
+				const subcategory = current.subcategory || 'Unknown';
+				if (!acc[subcategory]) {
+					acc[subcategory] = [];
+				}
+				acc[subcategory].push(current);
+				return acc;
+			}, {});
+		},
+	},
+
+	splitByValueRange: {
+		help: "Split by value ranges (Small: <100, Medium: 100-1000, Large: >1000)",
+		exec: (input: Array<IInput | any>, key: IDataSourceKeys) => {
+			return input.reduce((acc, current) => {
+				const value = Math.abs(current.value || 0);
+				let range: string;
+				if (value < 100) {
+					range = 'Small (<100)';
+				} else if (value <= 1000) {
+					range = 'Medium (100-1000)';
+				} else {
+					range = 'Large (>1000)';
+				}
+				if (!acc[range]) {
+					acc[range] = [];
+				}
+				acc[range].push(current);
+				return acc;
+			}, {});
+		},
+	},
+
+	splitByCategory: {
+		help: "Split by category",
+		exec: (input: Array<IInput | any>, key: IDataSourceKeys) => {
+			return input.reduce((acc, current) => {
+				const category = current.category || 'Unknown';
+				if (!acc[category]) {
+					acc[category] = [];
+				}
+				acc[category].push(current);
+				return acc;
+			}, {});
+		},
+	},
 };
 
 export const functions: {

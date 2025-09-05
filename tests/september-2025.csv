@@ -1,0 +1,32 @@
+Category,Subcategory,Value,TimeStamp,Extra
+Income,Salary,5000,2025-09-01,Full-time
+Income,Freelance,800,2025-09-03,Project A
+House Expenses,Mortgage,1850,2025-09-01,Monthly payment
+House Expenses,Utilities,220,2025-09-02,Electricity & Gas
+House Expenses,Insurance,180,2025-09-01,Home insurance
+House Expenses,Internet,89,2025-09-03,Monthly plan
+Expenses,Groceries,150,2025-09-01,Weekly shopping
+Expenses,Groceries,180,2025-09-08,Weekly shopping
+Expenses,Groceries,165,2025-09-15,Weekly shopping
+Expenses,Groceries,140,2025-09-22,Weekly shopping
+Expenses,Gas,75,2025-09-02,Car fuel
+Expenses,Gas,82,2025-09-12,Car fuel
+Expenses,Gas,78,2025-09-25,Car fuel
+Expenses,Dining,45,2025-09-04,Restaurant
+Expenses,Dining,32,2025-09-11,Lunch
+Expenses,Dining,58,2025-09-18,Date night
+Expenses,Dining,28,2025-09-26,Coffee
+Portfolio,Stocks,2500,2025-09-01,Monthly investment
+Portfolio,Index Fund,1200,2025-09-01,401k contribution
+Portfolio,Emergency Fund,500,2025-09-01,Savings
+Dividend,Stock Dividends,85,2025-09-15,AAPL dividend
+Dividend,REIT Dividends,42,2025-09-20,Real estate
+Cotisation,401k Match,600,2025-09-01,Employer match
+Debt,Credit Card,-320,2025-09-05,Payment
+Debt,Student Loan,-280,2025-09-01,Monthly payment
+Expenses,Subscription,15,2025-09-01,Netflix
+Expenses,Subscription,12,2025-09-01,Spotify
+Expenses,Shopping,120,2025-09-10,Clothing
+Expenses,Shopping,65,2025-09-20,Electronics
+House Expenses,Maintenance,200,2025-09-14,Plumbing repair
+Income,Bonus,400,2025-09-30,Performance bonus

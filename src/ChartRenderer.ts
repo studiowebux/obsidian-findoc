@@ -2,11 +2,7 @@ import { MarkdownRenderChild } from "obsidian";
 import Chart, { ChartConfiguration } from "chart.js/auto";
 import { idToText } from "utils";
 import { IChartLine, IModel, IChartPie, IChartRadar } from "types";
-
-const generateId = () => {
-	const array = new Uint32Array(10);
-	return `id-${window.crypto.getRandomValues(array)[0].toString()}`;
-};
+import { generateSecureId } from "security";
 
 export default class ChartRenderer extends MarkdownRenderChild {
 	private data: IChartLine | IChartPie | IChartRadar;
@@ -53,12 +49,18 @@ export default class ChartRenderer extends MarkdownRenderChild {
 				// Chart
 				const canvasDiv = this.containerEl.createEl("div");
 				canvasDiv.addClass("chart-container");
+				
+				// Add chart type attribute for specific styling
+				if (this.data.type === "radar") {
+					canvasDiv.setAttribute("data-chart-type", "radar");
+				}
+				
 				canvasDiv.append(this.canvases[this.model]);
 				this.containerEl.append(canvasDiv);
 
 				// Footer
 				/// Button to toggle footer
-				const id = generateId();
+				const id = generateSecureId();
 				const btn = this.containerEl.createEl("button");
 				btn.addClasses(["findoc-btn"]);
 				btn.setAttribute("data-toggle", "collapse");

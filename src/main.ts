@@ -39,15 +39,156 @@ export default class FinDocPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData()
-		);
+		const savedData = await this.loadData();
+		
+		// Deep merge settings, especially models
+		this.settings = {
+			...DEFAULT_SETTINGS,
+			...savedData,
+			models: {
+				...DEFAULT_SETTINGS.models,
+				...savedData.models
+			}
+		};
+
+		// Run migration for new models
+		await this.migrateSettings();
+	}
+
+	async migrateSettings() {
+		const currentVersion = "0.8.0";
+		const savedVersion = this.settings.version || "0.7.4";
+
+		// Only migrate if version is older than current OR if any new models are missing
+		const newModelNames = [
+			'expensesQuarterly', 'incomeWeekly', 'portfolioByValueRange', 
+			'expensesMonthlyBreakdown', 'allCategoriesBreakdown',
+			'portfolioReportTable', 'quarterlyIncomeExpenseReport', 'weeklyExpenseAnalysis'
+		];
+		
+		const missingModels = newModelNames.filter(name => !this.settings.models[name]);
+		const needsMigration = this.compareVersions(savedVersion, currentVersion) < 0 || missingModels.length > 0;
+		
+		if (needsMigration) {
+			// Add new models from v0.8.0 that don't exist in user settings
+			const newModels = {
+				expensesQuarterly: DEFAULT_SETTINGS.models.expensesQuarterly,
+				incomeWeekly: DEFAULT_SETTINGS.models.incomeWeekly,
+				portfolioByValueRange: DEFAULT_SETTINGS.models.portfolioByValueRange,
+				expensesBySubcategory: DEFAULT_SETTINGS.models.expensesBySubcategory,
+				allCategoriesBreakdown: DEFAULT_SETTINGS.models.allCategoriesBreakdown,
+				portfolioReportTable: DEFAULT_SETTINGS.models.portfolioReportTable,
+				quarterlyIncomeExpenseReport: DEFAULT_SETTINGS.models.quarterlyIncomeExpenseReport,
+				weeklyExpenseAnalysis: DEFAULT_SETTINGS.models.weeklyExpenseAnalysis,
+			};
+
+			let addedCount = 0;
+			for (const [modelName, modelConfig] of Object.entries(newModels)) {
+				if (!this.settings.models[modelName]) {
+					this.settings.models[modelName] = modelConfig;
+					addedCount++;
+				}
+			}
+
+			// Update version
+			this.settings.version = currentVersion;
+			
+			// Save updated settings
+			await this.saveSettings();
+
+			if (addedCount > 0) {
+				new Notice(`Findoc v${currentVersion}: Added ${addedCount} new models!`, 5000);
+			}
+		}
+	}
+
+	compareVersions(a: string, b: string): number {
+		const aParts = a.split('.').map(n => parseInt(n));
+		const bParts = b.split('.').map(n => parseInt(n));
+		
+		for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+			const aPart = aParts[i] || 0;
+			const bPart = bParts[i] || 0;
+			
+			if (aPart < bPart) return -1;
+			if (aPart > bPart) return 1;
+		}
+		return 0;
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	showInlineError(el: HTMLElement, content: any, errorMessage: string) {
+		// Clear any existing content
+		el.empty();
+		
+		// Create error container
+		const errorDiv = el.createEl("div");
+		errorDiv.style.cssText = `
+			border: 2px solid var(--text-error);
+			background: var(--background-modifier-error);
+			padding: 15px;
+			margin: 10px 0;
+			border-radius: 8px;
+			font-family: var(--font-interface);
+		`;
+		
+		// Error title
+		const title = errorDiv.createEl("h4");
+		title.style.cssText = `
+			color: var(--text-on-accent);
+			margin: 0 0 8px 0;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-weight: 600;
+		`;
+		title.innerHTML = `⚠️ Invalid Snippet Configuration`;
+		
+		// Error details
+		const details = errorDiv.createEl("p");
+		details.style.cssText = `
+			margin: 0 0 10px 0;
+			color: var(--text-on-accent);
+			background: var(--text-error);
+			padding: 8px;
+			border-radius: 4px;
+			font-size: 14px;
+			font-weight: 500;
+		`;
+		details.textContent = errorMessage;
+		
+		// Snippet info
+		const info = errorDiv.createEl("div");
+		info.style.cssText = `
+			background: var(--background-primary);
+			padding: 10px;
+			border-radius: 4px;
+			border: 1px solid var(--border-color);
+			font-family: var(--font-monospace);
+			font-size: 12px;
+		`;
+		
+		const snippetText = `Model: ${content.model}\nView: ${content.view || content.type || 'chart'}\nFile: ${content.filename}`;
+		info.textContent = snippetText;
+		
+		// Help text
+		const help = errorDiv.createEl("p");
+		help.style.cssText = `
+			margin: 10px 0 0 0;
+			font-size: 12px;
+			color: var(--text-normal);
+			background: var(--background-primary);
+			padding: 8px;
+			border-radius: 4px;
+			border: 1px solid var(--border-color);
+		`;
+		help.innerHTML = `💡 <strong>Tips:</strong><br>
+		• Check Settings → Findoc → Models for compatible snippets<br>
+		• File not found? Try <code>filename: tests/test-data.csv</code><br>
+		• Wrong model name? Check case sensitivity (camelCase required)`;
 	}
 
 	async onload() {
@@ -98,6 +239,7 @@ export default class FinDocPlugin extends Plugin {
 							if (
 								content.view === "view" ||
 								content.view === "line" ||
+								content.view === "chart" || // NEW: Support view: chart
 								content.type === "chart" || // DEPRECATED
 								content.type === "line" || // DEPRECATED
 								(!content.type && !content.view)
@@ -125,15 +267,13 @@ export default class FinDocPlugin extends Plugin {
 											)
 										);
 								} catch (e) {
-									new Notice(
-										`An error occured while processing ${content.model}, ${content.title}`,
-										30000
-									);
-									throw e;
+									this.showInlineError(el, content, e.message);
+									return;
 								}
 							} else if (
 								content.type === "report" || // DEPRECATED
-								content.view === "report"
+								content.view === "report" ||
+								content.view === "table"
 							) {
 								const reportData: IReportData = reporting(
 									data,
@@ -142,11 +282,13 @@ export default class FinDocPlugin extends Plugin {
 									this.settings.models,
 									this.settings.csvSeparator
 								);
+								const viewType = content.view === "table" ? "table" : "text";
 								ctx.addChild(
 									new ReportRenderer(
 										this.settings.models[content.model],
 										reportData,
-										el
+										el,
+										viewType
 									)
 								);
 							} else if (
@@ -176,11 +318,8 @@ export default class FinDocPlugin extends Plugin {
 											)
 										);
 								} catch (e) {
-									new Notice(
-										`An error occured while processing ${content.model}, ${content.title}`,
-										30000
-									);
-									throw e;
+									this.showInlineError(el, content, e.message);
+									return;
 								}
 							} else if (
 								content.view === "radar" ||
@@ -209,19 +348,26 @@ export default class FinDocPlugin extends Plugin {
 											)
 										);
 								} catch (e) {
-									new Notice(
-										`An error occured while processing ${content.model}, ${content.title}`,
-										30000
-									);
-									throw e;
+									this.showInlineError(el, content, e.message);
+									return;
 								}
 							} else {
-								new Notice("Unable to generate chart", 10000);
+								this.showInlineError(el, content, "Unsupported view type. Supported types: chart, pie, radar, report, table");
+								return;
 							}
 						}
 					} catch (e) {
-						new Notice(e.message, 10000);
-						throw e;
+						// Show general error notice for parsing/loading issues
+						new Notice(`Findoc error: ${e.message}`, 10000);
+						
+						// Show inline error if possible
+						el.createEl("div", {
+							text: `⚠️ Findoc Error: ${e.message}`,
+							attr: {
+								style: "color: var(--text-error); padding: 10px; border: 1px solid var(--text-error); border-radius: 4px;"
+							}
+						});
+						return;
 					}
 				}
 			);
