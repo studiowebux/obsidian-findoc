@@ -365,6 +365,49 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 			dataSourceKey: "timestamp",
 			values: "House Expenses, Expenses",
 		},
+
+		// DIVIDEND ANALYSIS MODELS
+
+		dividendMonthlyBySymbol: {
+			dataSource: "splitByYearMonth",
+			categories: ["Dividend"],
+			output: "generateDividendMonthlyBySymbol",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		dividendCumulativeBySymbol: {
+			dataSource: "splitByYearMonth",
+			categories: ["Dividend"],
+			output: "generateCumulativeDividendBySymbol",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		dividendAnalysisReport: {
+			dataSource: "splitByYearMonth",
+			categories: ["Dividend"],
+			output: "reportDividendAnalysis",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		// Quarterly dividend analysis for radar charts
+		dividendQuarterlyBySymbol: {
+			dataSource: "splitByQuarter",
+			categories: ["Dividend"],
+			output: "generateDividendMonthlyBySymbol",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
 	},
 	colors: COLORS,
 	debounce: "1000",

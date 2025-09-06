@@ -63,7 +63,8 @@ export default class FinDocPlugin extends Plugin {
 		const newModelNames = [
 			'expensesQuarterly', 'incomeWeekly', 'portfolioByValueRange', 
 			'expensesMonthlyBreakdown', 'allCategoriesBreakdown',
-			'portfolioReportTable', 'quarterlyIncomeExpenseReport', 'weeklyExpenseAnalysis'
+			'portfolioReportTable', 'quarterlyIncomeExpenseReport', 'weeklyExpenseAnalysis',
+			'dividendMonthlyBySymbol', 'dividendCumulativeBySymbol', 'dividendAnalysisReport', 'dividendQuarterlyBySymbol'
 		];
 		
 		const missingModels = newModelNames.filter(name => !this.settings.models[name]);
@@ -80,6 +81,10 @@ export default class FinDocPlugin extends Plugin {
 				portfolioReportTable: DEFAULT_SETTINGS.models.portfolioReportTable,
 				quarterlyIncomeExpenseReport: DEFAULT_SETTINGS.models.quarterlyIncomeExpenseReport,
 				weeklyExpenseAnalysis: DEFAULT_SETTINGS.models.weeklyExpenseAnalysis,
+				dividendMonthlyBySymbol: DEFAULT_SETTINGS.models.dividendMonthlyBySymbol,
+				dividendCumulativeBySymbol: DEFAULT_SETTINGS.models.dividendCumulativeBySymbol,
+				dividendAnalysisReport: DEFAULT_SETTINGS.models.dividendAnalysisReport,
+				dividendQuarterlyBySymbol: DEFAULT_SETTINGS.models.dividendQuarterlyBySymbol,
 			};
 
 			let addedCount = 0;

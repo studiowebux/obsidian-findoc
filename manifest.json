@@ -1,7 +1,7 @@
 {
 	"id": "findoc",
 	"name": "Financial Doc",
-	"version": "0.8.0",
+	"version": "0.8.1",
 	"minAppVersion": "1.00.0",
 	"description": "Financial Documentation and Tracking using CSV format and Chart.js directly in Obsidian",
 	"author": "Studio Webux",

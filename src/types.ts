@@ -148,11 +148,13 @@ export type IReportEntry = {
 };
 
 export type IReportMultiData = {
-	datasets: IReportEntries;
+	datasets: IReportEntries | IReportEntries[];
+	summary?: any;
 };
 
 export type IReportEntries = {
 	label: string;
 	data: number[];
 	labels: string[];
+	metadata?: any;
 };

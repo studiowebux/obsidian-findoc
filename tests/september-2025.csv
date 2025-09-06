@@ -19,8 +19,15 @@ Expenses,Dining,28,2025-09-26,Coffee
 Portfolio,Stocks,2500,2025-09-01,Monthly investment
 Portfolio,Index Fund,1200,2025-09-01,401k contribution
 Portfolio,Emergency Fund,500,2025-09-01,Savings
-Dividend,Stock Dividends,85,2025-09-15,AAPL dividend
-Dividend,REIT Dividends,42,2025-09-20,Real estate
+Dividend,AAPL,85,2025-09-15,Apple dividend
+Dividend,MSFT,52,2025-09-18,Microsoft dividend
+Dividend,VTI,28,2025-09-05,Vanguard ETF dividend
+Dividend,REIT,42,2025-09-20,Real estate dividend
+Dividend,SCHD,35,2025-09-25,Schwab dividend ETF
+Dividend,AAPL,88,2025-08-15,Apple dividend (prev month)
+Dividend,MSFT,55,2025-08-18,Microsoft dividend (prev month)
+Dividend,VTI,30,2025-08-05,Vanguard ETF dividend (prev month)
+Dividend,REIT,40,2025-08-20,Real estate dividend (prev month)
 Cotisation,401k Match,600,2025-09-01,Employer match
 Debt,Credit Card,-320,2025-09-05,Payment
 Debt,Student Loan,-280,2025-09-01,Monthly payment
