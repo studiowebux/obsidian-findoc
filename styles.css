@@ -270,3 +270,129 @@ table td {
 .findoc-btn-disabled:hover {
 	background: var(--text-error) !important;
 }
+
+/* Table Style */
+
+.findoc-report-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 10px 0;
+	font-family: var(--font-interface);
+	border: 1px solid var(--border-color);
+}
+
+.findoc-report-table th,
+.findoc-report-table td {
+	padding: 8px 12px;
+	text-align: left;
+	border: 1px solid var(--border-color);
+}
+
+.findoc-report-table th {
+	background-color: var(--background-secondary);
+	font-weight: 600;
+	color: var(--text-normal);
+}
+
+.findoc-report-table tr:nth-child(even) {
+	background-color: var(--background-secondary-alt);
+}
+
+.findoc-report-table tr:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.findoc-report-table td:last-child {
+	text-align: right;
+}
+
+/* Error Styling for main.ts */
+.findoc-error-container {
+	border: 2px solid var(--text-error);
+	background: var(--background-modifier-error);
+	padding: 15px;
+	margin: 10px 0;
+	border-radius: 8px;
+	font-family: var(--font-interface);
+}
+
+.findoc-error-title {
+	color: var(--text-on-accent);
+	margin: 0 0 8px 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+}
+
+.findoc-error-details {
+	margin: 0 0 10px 0;
+	color: var(--text-on-accent);
+	background: var(--text-error);
+	padding: 8px;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.findoc-error-snippet-info {
+	background: var(--background-primary);
+	padding: 10px;
+	border-radius: 4px;
+	border: 1px solid var(--border-color);
+	font-family: var(--font-monospace);
+	font-size: 12px;
+	white-space: pre-line;
+}
+
+.findoc-error-help {
+	margin: 10px 0 0 0;
+	font-size: 12px;
+	color: var(--text-normal);
+	background: var(--background-primary);
+	padding: 8px;
+	border-radius: 4px;
+	border: 1px solid var(--border-color);
+}
+
+.findoc-general-error {
+	color: var(--text-error);
+	padding: 10px;
+	border: 1px solid var(--text-error);
+	border-radius: 4px;
+}
+
+/* Loading indicators for view.ts */
+.findoc-loading-overlay {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	padding: 10px 20px;
+	background: var(--background-primary);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	z-index: 1000;
+	font-size: 14px;
+}
+
+.findoc-loading-indicator {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	padding: 8px 16px;
+	background: var(--background-primary);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	z-index: 1000;
+	font-size: 12px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.findoc-loading-indicator.hidden {
+	display: none;
+}
+
+.findoc-loading-indicator.visible {
+	display: block;
+}

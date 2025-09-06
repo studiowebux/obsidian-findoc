@@ -128,18 +128,7 @@ export class CSVView extends TextFileView {
 				cls: 'findoc-loading-overlay',
 				text: `Loading ${data.length} rows...`
 			});
-			loadingDiv.style.cssText = `
-				position: absolute;
-				top: 50%;
-				left: 50%;
-				transform: translate(-50%, -50%);
-				padding: 10px 20px;
-				background: var(--background-primary);
-				border: 1px solid var(--border-color);
-				border-radius: 4px;
-				z-index: 1000;
-				font-size: 14px;
-			`;
+			// loadingDiv already has 'findoc-loading-overlay' class applied above
 			
 			// Remove loading indicator after table is built
 			setTimeout(() => {
@@ -624,18 +613,7 @@ export class CSVView extends TextFileView {
 			loadingEl = this.contentEl.createEl('div', {
 				cls: 'findoc-loading-indicator'
 			});
-			loadingEl.style.cssText = `
-				position: fixed;
-				top: 20px;
-				right: 20px;
-				padding: 8px 16px;
-				background: var(--background-primary);
-				border: 1px solid var(--border-color);
-				border-radius: 4px;
-				z-index: 1000;
-				font-size: 12px;
-				box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-			`;
+			// Styling handled by CSS class
 		}
 		
 		let text = message;
@@ -644,7 +622,8 @@ export class CSVView extends TextFileView {
 		}
 		
 		loadingEl.innerText = text;
-		loadingEl.style.display = 'block';
+		loadingEl.addClass('visible');
+		loadingEl.removeClass('hidden');
 	}
 
 	/**
@@ -653,7 +632,8 @@ export class CSVView extends TextFileView {
 	hideLoading() {
 		const loadingEl = this.contentEl.querySelector('.findoc-loading-indicator') as HTMLElement;
 		if (loadingEl) {
-			loadingEl.style.display = 'none';
+			loadingEl.addClass('hidden');
+			loadingEl.removeClass('visible');
 		}
 	}
 

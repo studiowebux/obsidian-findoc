@@ -1,62 +1,18 @@
 ### V0.8.0 - Beta - 2025-09-05 - (claude.ai Optimization)
 
-Includes Breaking Changes
+**Includes Breaking Changes**
 
-```markdown
-
-## 🆕 New Data Processing Functions
-
-The following new data split functions are now available:
-
-### Time-based Splitting
-- **`splitByQuarter`** - Split data by quarters (Q1, Q2, Q3, Q4)
-- **`splitByWeek`** - Split data by ISO week numbers
-
-### Data Analysis Splitting
-- **`splitBySubcategory`** - Group transactions by subcategory
-- **`splitByCategory`** - Group transactions by main category
-- **`splitByValueRange`** - Group by transaction size (Small: <100, Medium: 100-1000, Large: >1000)
-
-## 📊 New Default Models
-
-## 📋 New Table View Reports (POC)
-
-Use `view: table` to display reports as formatted tables instead of text:
-
-## ⚙️ Enhanced Settings Management
-
-### Model Management
-- **Add New Models**: Create custom models through settings
-- **Edit Existing Models**: Modify model configurations
-- **Duplicate Models**: Copy existing models as templates
-- **Delete Models**: Remove unwanted models
-- **Validation**: Automatic validation of model configurations
-
-### How to Access
-1. Go to Settings → Findoc
-2. Scroll to "Model Management" section
-3. Use the buttons to add, edit, duplicate, or delete models
-
-## 🔧 Technical Improvements
-
-### Performance Enhancements (~70% faster CSV processing)
-- Single-pass CSV parsing
-- Memory-efficient operations
-- Progressive loading for large datasets
-- Set-based filtering
-
-### Security Enhancements
-- XSS prevention with secure DOM manipulation
-- Safe mathematical expression evaluation
-- Input sanitization for all user fields
-- HTML tag stripping and validation
-
-### Better User Experience
-- Real-time loading indicators
-- Progress feedback for large operations
-- Non-blocking UI rendering
-- Enhanced error handling
-```
+- CSV Parsing Optimization
+- Added Settings to create new "output functions" (Not fully tested)
+- Added new Models to process the data
+- Added Lazy loading for large data set and avoid blocking obsidian - only for large CSV
+- [Breaking Changes] - Default settings are now merged with user-defined configurations
+- Reworked CSS
+- Added tests and examples to use models/processors
+- Added better error handling and showing directly in snippet output
+- Tested all models: line, chart, table, text, report, pie, view, radar
+- Improved the responsiveness of charts (full width)
+- Sorting button has now visual feedback
 
 ### V0.7.4 - Beta - 2025-09-04
 

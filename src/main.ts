@@ -126,65 +126,27 @@ export default class FinDocPlugin extends Plugin {
 		
 		// Create error container
 		const errorDiv = el.createEl("div");
-		errorDiv.style.cssText = `
-			border: 2px solid var(--text-error);
-			background: var(--background-modifier-error);
-			padding: 15px;
-			margin: 10px 0;
-			border-radius: 8px;
-			font-family: var(--font-interface);
-		`;
+		errorDiv.addClass("findoc-error-container");
 		
 		// Error title
 		const title = errorDiv.createEl("h4");
-		title.style.cssText = `
-			color: var(--text-on-accent);
-			margin: 0 0 8px 0;
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			font-weight: 600;
-		`;
+		title.addClass("findoc-error-title");
 		title.innerHTML = `⚠️ Invalid Snippet Configuration`;
 		
 		// Error details
 		const details = errorDiv.createEl("p");
-		details.style.cssText = `
-			margin: 0 0 10px 0;
-			color: var(--text-on-accent);
-			background: var(--text-error);
-			padding: 8px;
-			border-radius: 4px;
-			font-size: 14px;
-			font-weight: 500;
-		`;
+		details.addClass("findoc-error-details");
 		details.textContent = errorMessage;
 		
 		// Snippet info
 		const info = errorDiv.createEl("div");
-		info.style.cssText = `
-			background: var(--background-primary);
-			padding: 10px;
-			border-radius: 4px;
-			border: 1px solid var(--border-color);
-			font-family: var(--font-monospace);
-			font-size: 12px;
-		`;
-		
+		info.addClass("findoc-error-snippet-info");
 		const snippetText = `Model: ${content.model}\nView: ${content.view || content.type || 'chart'}\nFile: ${content.filename}`;
 		info.textContent = snippetText;
 		
 		// Help text
 		const help = errorDiv.createEl("p");
-		help.style.cssText = `
-			margin: 10px 0 0 0;
-			font-size: 12px;
-			color: var(--text-normal);
-			background: var(--background-primary);
-			padding: 8px;
-			border-radius: 4px;
-			border: 1px solid var(--border-color);
-		`;
+		help.addClass("findoc-error-help");
 		help.innerHTML = `💡 <strong>Tips:</strong><br>
 		• Check Settings → Findoc → Models for compatible snippets<br>
 		• File not found? Try <code>filename: tests/test-data.csv</code><br>
@@ -361,12 +323,10 @@ export default class FinDocPlugin extends Plugin {
 						new Notice(`Findoc error: ${e.message}`, 10000);
 						
 						// Show inline error if possible
-						el.createEl("div", {
-							text: `⚠️ Findoc Error: ${e.message}`,
-							attr: {
-								style: "color: var(--text-error); padding: 10px; border: 1px solid var(--text-error); border-radius: 4px;"
-							}
+						const generalError = el.createEl("div", {
+							text: `⚠️ Findoc Error: ${e.message}`
 						});
+						generalError.addClass("findoc-general-error");
 						return;
 					}
 				}

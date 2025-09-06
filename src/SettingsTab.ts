@@ -16,9 +16,45 @@ export default class SettingsTab extends PluginSettingTab {
 		loadIcons();
 	}
 
+	// Helper function for common button styles
+	private styleButton(button: HTMLElement, extraStyles = ''): void {
+		button.style.cssText = `
+			margin-bottom: 10px;
+			padding: 6px 12px;
+			border: 1px solid var(--border-color);
+			border-radius: 4px;
+			background: var(--interactive-normal);
+			color: var(--text-normal);
+			cursor: pointer;
+			${extraStyles}
+		`;
+	}
+
+	// Helper function for modal styles
+	private getModalStyles(): string {
+		return `
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background: var(--background-primary);
+			border: 2px solid var(--border-color);
+			border-radius: 8px;
+			padding: 20px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+			z-index: 9999;
+			min-width: 300px;
+		`;
+	}
+
+	// Helper function for button container styles
+	private getButtonContainerStyles(): string {
+		return 'display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;';
+	}
+
 	createNewColorBtn(): HTMLElement {
 		const btn = this.containerEl.createEl("button");
-		btn.classList.add("findoc-btn-margin-bottom");
+		this.styleButton(btn);
 		btn.id = "newColor";
 		btn.innerText = "Add New Color";
 		btn.onClickEvent(() => {
@@ -30,7 +66,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 	createNewCategoryBtn(): HTMLElement {
 		const btn = this.containerEl.createEl("button");
-		btn.classList.add("findoc-btn-margin-bottom");
+		this.styleButton(btn);
 		btn.id = "newType";
 		btn.innerText = "Add New Category";
 		btn.onClickEvent(() => {
@@ -42,7 +78,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 	createReloadModelsBtn(): HTMLElement {
 		const btn = this.containerEl.createEl("button");
-		btn.classList.add("findoc-btn-margin-bottom");
+		this.styleButton(btn, 'background: var(--text-warning); color: white;');
 		btn.id = "reloadModels";
 		btn.innerText = "Load Default Models (clears custom models)";
 		btn.onClickEvent(async () => {
@@ -663,19 +699,7 @@ export default class SettingsTab extends PluginSettingTab {
 	async promptForModelName(defaultName: string = ''): Promise<string | null> {
 		return new Promise((resolve) => {
 			const modal = document.createElement('div');
-			modal.style.cssText = `
-				position: fixed;
-				top: 50%;
-				left: 50%;
-				transform: translate(-50%, -50%);
-				background: var(--background-primary);
-				border: 1px solid var(--border-color);
-				border-radius: 8px;
-				padding: 20px;
-				z-index: 10000;
-				box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-				width: 300px;
-			`;
+			modal.style.cssText = this.getModalStyles() + 'width: 300px; z-index: 10000;';
 
 			const title = modal.createEl('h3');
 			title.innerText = 'Enter Model Name';
@@ -690,13 +714,16 @@ export default class SettingsTab extends PluginSettingTab {
 				border: 1px solid var(--border-color);
 				border-radius: 4px;
 				background: var(--background-secondary);
+				color: var(--text-normal);
+				box-sizing: border-box;
 			`;
 
 			const buttonsDiv = modal.createDiv();
-			buttonsDiv.style.cssText = 'display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;';
+			buttonsDiv.style.cssText = this.getButtonContainerStyles();
 
 			const cancelBtn = buttonsDiv.createEl('button');
 			cancelBtn.innerText = 'Cancel';
+			this.styleButton(cancelBtn, 'margin-bottom: 0;');
 			cancelBtn.onclick = () => {
 				modal.remove();
 				resolve(null);
@@ -704,7 +731,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 			const okBtn = buttonsDiv.createEl('button');
 			okBtn.innerText = 'OK';
-			okBtn.style.cssText = 'background: var(--interactive-accent); color: white; border: none; padding: 6px 12px; border-radius: 4px;';
+			this.styleButton(okBtn, 'background: var(--interactive-accent); color: var(--text-on-accent); margin-bottom: 0;');
 			okBtn.onclick = () => {
 				modal.remove();
 				resolve(input.value);
@@ -730,19 +757,7 @@ export default class SettingsTab extends PluginSettingTab {
 	async confirmDelete(modelKey: string): Promise<boolean> {
 		return new Promise((resolve) => {
 			const modal = document.createElement('div');
-			modal.style.cssText = `
-				position: fixed;
-				top: 50%;
-				left: 50%;
-				transform: translate(-50%, -50%);
-				background: var(--background-primary);
-				border: 1px solid var(--border-color);
-				border-radius: 8px;
-				padding: 20px;
-				z-index: 10000;
-				box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-				width: 350px;
-			`;
+			modal.style.cssText = this.getModalStyles() + 'width: 350px; z-index: 10000;';
 
 			const title = modal.createEl('h3');
 			title.innerText = 'Confirm Deletion';
@@ -752,10 +767,11 @@ export default class SettingsTab extends PluginSettingTab {
 			message.innerText = `Are you sure you want to delete the model "${modelKey}"? This action cannot be undone.`;
 
 			const buttonsDiv = modal.createDiv();
-			buttonsDiv.style.cssText = 'display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;';
+			buttonsDiv.style.cssText = this.getButtonContainerStyles();
 
 			const cancelBtn = buttonsDiv.createEl('button');
 			cancelBtn.innerText = 'Cancel';
+			this.styleButton(cancelBtn, 'margin-bottom: 0;');
 			cancelBtn.onclick = () => {
 				modal.remove();
 				resolve(false);
@@ -763,7 +779,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 			const deleteBtn = buttonsDiv.createEl('button');
 			deleteBtn.innerText = 'Delete';
-			deleteBtn.style.cssText = 'background: var(--text-error); color: white; border: none; padding: 6px 12px; border-radius: 4px;';
+			this.styleButton(deleteBtn, 'background: var(--text-error); color: var(--text-on-accent); margin-bottom: 0;');
 			deleteBtn.onclick = () => {
 				modal.remove();
 				resolve(true);
