@@ -793,4 +793,181 @@ export const functions: {
 			};
 		},
 	},
+
+	// DIVIDEND ANALYSIS FUNCTIONS
+	generateDividendMonthlyBySymbol: {
+		help: "Generate monthly dividend data per symbol (subcategory)",
+		exec: ({
+			categoriesToSelect,
+			input,
+			labels,
+			colors,
+		}: {
+			categoriesToSelect: string[];
+			input: { [key: string]: IInput[] };
+			labels: string[];
+			colors: string[];
+		}): IDataset => {
+			const usableColors = [...colors];
+			
+			// Get all unique symbols from dividend entries
+			const symbols = new Set<string>();
+			Object.values(input).forEach(entries => {
+				entries
+					.filter(entry => categoriesToSelect.includes(entry.category))
+					.forEach(entry => symbols.add(entry.subcategory));
+			});
+
+			const datasets = Array.from(symbols).map((symbol) => {
+				const color = usableColors[0] || "#1ac18f";
+				usableColors.shift();
+				
+				return {
+					label: symbol,
+					borderColor: color,
+					backgroundColor: color + "20", // Add transparency
+					fill: false,
+					tension: 0.2,
+					segment: {
+						borderColor: (ctx: IContext) => skipped(ctx, color),
+						borderDash: (ctx: IContext) => skipped(ctx, [3, 3]),
+					},
+					data: labels.map(label => {
+						const entries = input[label] || [];
+						return entries
+							.filter(entry => 
+								categoriesToSelect.includes(entry.category) && 
+								entry.subcategory === symbol
+							)
+							.reduce((sum, entry) => sum + entry.value, 0);
+					}),
+				};
+			});
+
+			return {
+				labels,
+				datasets,
+			};
+		},
+	},
+
+	generateCumulativeDividendBySymbol: {
+		help: "Generate cumulative dividend data per symbol (subcategory)",
+		exec: ({
+			categoriesToSelect,
+			input,
+			labels,
+			colors,
+		}: {
+			categoriesToSelect: string[];
+			input: { [key: string]: IInput[] };
+			labels: string[];
+			colors: string[];
+		}): IDataset => {
+			const usableColors = [...colors];
+			
+			// Get all unique symbols from dividend entries
+			const symbols = new Set<string>();
+			Object.values(input).forEach(entries => {
+				entries
+					.filter(entry => categoriesToSelect.includes(entry.category))
+					.forEach(entry => symbols.add(entry.subcategory));
+			});
+
+			const datasets = Array.from(symbols).map((symbol) => {
+				const color = usableColors[0] || "#1ac18f";
+				usableColors.shift();
+				
+				const monthlyData = labels.map(label => {
+					const entries = input[label] || [];
+					return entries
+						.filter(entry => 
+							categoriesToSelect.includes(entry.category) && 
+							entry.subcategory === symbol
+						)
+						.reduce((sum, entry) => sum + entry.value, 0);
+				});
+
+				// Calculate cumulative sum
+				const cumulativeData = monthlyData.map((value, index) => 
+					value + monthlyData.slice(0, index).reduce((acc, v) => acc + v, 0)
+				);
+
+				return {
+					label: symbol,
+					borderColor: color,
+					backgroundColor: color + "20",
+					fill: false,
+					tension: 0.2,
+					segment: {
+						borderColor: (ctx: IContext) => skipped(ctx, color),
+						borderDash: (ctx: IContext) => skipped(ctx, [3, 3]),
+					},
+					data: cumulativeData,
+				};
+			});
+
+			return {
+				labels,
+				datasets,
+			};
+		},
+	},
+
+	reportDividendAnalysis: {
+		help: "Report: Comprehensive dividend analysis per symbol",
+		exec: ({
+			categoriesToSelect,
+			input,
+		}: {
+			categoriesToSelect: string[];
+			input: { [key: string]: IInput[] };
+		}): IReportMultiData => {
+			// Get all dividend entries
+			const dividendEntries = Object.values(input)
+				.flat()
+				.filter(entry => categoriesToSelect.includes(entry.category));
+
+			// Group by symbol
+			const symbolData: { [symbol: string]: IInput[] } = {};
+			dividendEntries.forEach(entry => {
+				if (!symbolData[entry.subcategory]) {
+					symbolData[entry.subcategory] = [];
+				}
+				symbolData[entry.subcategory].push(entry);
+			});
+
+			const results: IReportEntries[] = [];
+
+			Object.entries(symbolData).forEach(([symbol, entries]) => {
+				const totalDividends = entries.reduce((sum, entry) => sum + entry.value, 0);
+				const avgMonthlyDividend = totalDividends / new Set(entries.map(e => e.timestamp.toString().substring(0, 7))).size;
+				const paymentCount = entries.length;
+				const firstPayment = new Date(Math.min(...entries.map(e => new Date(e.timestamp).getTime())));
+				const lastPayment = new Date(Math.max(...entries.map(e => new Date(e.timestamp).getTime())));
+
+				results.push({
+					label: symbol,
+					data: [totalDividends, avgMonthlyDividend, paymentCount],
+					labels: ['Total Dividends', 'Avg Monthly', 'Payment Count'],
+					metadata: {
+						firstPayment: firstPayment.toISOString().split('T')[0],
+						lastPayment: lastPayment.toISOString().split('T')[0],
+						totalValue: totalDividends,
+						// Formatting hints for each data value
+						formatTypes: ['money', 'money', 'generic']
+					}
+				});
+			});
+
+			return {
+				datasets: results,
+				summary: {
+					totalSymbols: Object.keys(symbolData).length,
+					totalDividends: dividendEntries.reduce((sum, entry) => sum + entry.value, 0),
+					totalPayments: dividendEntries.length
+				}
+			};
+		},
+	},
 };

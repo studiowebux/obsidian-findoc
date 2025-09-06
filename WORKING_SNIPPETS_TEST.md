@@ -159,6 +159,29 @@ view: chart
 title: Weekly Income Trends
 ```
 
+### 📈 **NEW DIVIDEND ANALYSIS MODELS**
+
+```findoc
+filename: september-2025.csv
+model: dividendMonthlyBySymbol
+view: chart
+title: Monthly Dividends by Stock Symbol
+```
+
+```findoc
+filename: september-2025.csv
+model: dividendCumulativeBySymbol
+view: chart
+title: Cumulative Dividend Growth by Symbol
+```
+
+```findoc
+filename: september-2025.csv
+model: dividendQuarterlyBySymbol
+view: chart
+title: Quarterly Dividend Performance by Symbol
+```
+
 ---
 
 ## 🥧 **WORKING PIE CHART MODELS**
@@ -193,6 +216,13 @@ view: pie
 title: Cumulative Category Totals
 ```
 
+```findoc
+filename: september-2025.csv
+model: dividendMonthlyBySymbol
+view: pie
+title: Monthly Dividend Distribution by Symbol
+```
+
 ---
 
 ## 🎯 **WORKING RADAR CHARTS**
@@ -225,6 +255,20 @@ filename: september-2025.csv
 model: dividend
 view: radar
 title: Investment Profile Radar
+```
+
+```findoc
+filename: september-2025.csv
+model: dividendQuarterlyBySymbol
+view: radar
+title: Quarterly Dividend Radar by Symbol
+```
+
+```findoc
+filename: september-2025.csv
+model: dividendMonthlyBySymbol
+view: radar
+title: Monthly Dividend Portfolio Radar
 ```
 
 ---
@@ -275,6 +319,15 @@ date: 2025-09-01
 ```findoc
 filename: september-2025.csv
 model: weeklyExpenseAnalysis
+view: report
+date: 2025-09-01
+```
+
+### 💎 **NEW DIVIDEND REPORTS**
+
+```findoc
+filename: september-2025.csv
+model: dividendAnalysisReport
 view: report
 date: 2025-09-01
 ```
@@ -331,6 +384,15 @@ view: table
 date: 2025-09-01
 ```
 
+### 💎 **NEW DIVIDEND TABLE REPORTS**
+
+```findoc
+filename: september-2025.csv
+model: dividendAnalysisReport
+view: table
+date: 2025-09-01
+```
+
 ---
 
 ## ⚠️ **KNOWN PROBLEMATIC MODELS**
@@ -372,7 +434,7 @@ title: May Not Work With Test Data
 - **Clear working vs broken sections**
 
 ✅ **All These Models Are In Your Config:**
-- Total verified models: 26 models
+- Total verified models: 30 models (including 4 new dividend analysis models)
 - All have been migrated to v0.8.0
 - All use functions that exist in methods.ts
 
@@ -381,3 +443,9 @@ title: May Not Work With Test Data
 2. `portfolio` + `chart`
 3. `dividend` + `pie`
 4. `portfolioReport` + `table`
+
+**Try the new dividend analysis:**
+1. `dividendMonthlyBySymbol` + `chart` (monthly dividends per stock)
+2. `dividendCumulativeBySymbol` + `chart` (cumulative growth per stock)
+3. `dividendQuarterlyBySymbol` + `radar` (quarterly performance radar)
+4. `dividendAnalysisReport` + `table` (comprehensive analysis)

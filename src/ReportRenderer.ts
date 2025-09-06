@@ -35,8 +35,12 @@ export default class ReportRenderer extends MarkdownRenderChild {
 
 	private renderTableView() {
 		if (Array.isArray(this.data.datasets)) {
+			// Check if it's IReportEntry[] (has date property) or IReportEntries[] (has labels property)
+			const firstDataset = this.data.datasets[0];
+			const isReportEntries = 'labels' in firstDataset && Array.isArray(firstDataset.data);
+			
 			this.containerEl.createEl("h3", {
-				text: `Report ${this.data?.datasets[0]?.date} (Table View)`,
+				text: `Report ${!isReportEntries && 'date' in firstDataset ? firstDataset.date : ''} (Table View)`,
 			});
 
 			this.containerEl.createEl("p", {
@@ -48,24 +52,48 @@ export default class ReportRenderer extends MarkdownRenderChild {
 			const table = this.containerEl.createEl("table");
 			table.addClass("findoc-report-table");
 
-			// Create header
-			const headerRow = table.createEl("tr");
-			headerRow.createEl("th", { text: "Category" });
-			headerRow.createEl("th", { text: "Value" });
-			headerRow.createEl("th", { text: "Date" });
+			if (isReportEntries) {
+				// Handle IReportEntries[] type (like dividend analysis)
+				const headerRow = table.createEl("tr");
+				headerRow.createEl("th", { text: "Symbol" });
+				headerRow.createEl("th", { text: "Metric" });
+				headerRow.createEl("th", { text: "Value" });
 
-			// Create rows
-			this.data.datasets.forEach((entry: IReportEntry) => {
-				const row = table.createEl("tr");
-				row.createEl("td", { text: entry.label });
-				row.createEl("td", {
-					text: this.formatValue(
-						entry.data,
-						this.modelInfo.chartLabelType,
-					),
+				(this.data.datasets as IReportEntries[]).forEach((entry: IReportEntries) => {
+					entry.labels.forEach((label, index) => {
+						const row = table.createEl("tr");
+						row.createEl("td", { text: entry.label });
+						row.createEl("td", { text: label });
+						
+						// Use specific format type if available in metadata, otherwise use model default
+						const formatType = entry.metadata?.formatTypes?.[index] || this.modelInfo.chartLabelType;
+						row.createEl("td", {
+							text: this.formatValue(
+								entry.data[index],
+								formatType
+							),
+						});
+					});
 				});
-				row.createEl("td", { text: entry.date });
-			});
+			} else {
+				// Handle IReportEntry[] type (traditional reports)
+				const headerRow = table.createEl("tr");
+				headerRow.createEl("th", { text: "Category" });
+				headerRow.createEl("th", { text: "Value" });
+				headerRow.createEl("th", { text: "Date" });
+
+				(this.data.datasets as IReportEntry[]).forEach((entry: IReportEntry) => {
+					const row = table.createEl("tr");
+					row.createEl("td", { text: entry.label });
+					row.createEl("td", {
+						text: this.formatValue(
+							entry.data,
+							this.modelInfo.chartLabelType
+						),
+					});
+					row.createEl("td", { text: entry.date });
+				});
+			}
 		} else if (!Array.isArray(this.data.datasets)) {
 			const { data, label, labels } = this.data
 				.datasets as IReportEntries;
@@ -103,8 +131,12 @@ export default class ReportRenderer extends MarkdownRenderChild {
 
 	private renderTextView() {
 		if (Array.isArray(this.data.datasets)) {
+			// Check if it's IReportEntry[] (has date property) or IReportEntries[] (has labels property)
+			const firstDataset = this.data.datasets[0];
+			const isReportEntries = 'labels' in firstDataset && Array.isArray(firstDataset.data);
+			
 			this.containerEl.createEl("h3", {
-				text: `Report ${this.data?.datasets[0]?.date}`,
+				text: `Report ${!isReportEntries && 'date' in firstDataset ? firstDataset.date : ''}`,
 			});
 
 			this.containerEl.createEl("p", {
@@ -116,18 +148,40 @@ export default class ReportRenderer extends MarkdownRenderChild {
 
 			this.containerEl.createEl("hr");
 
-			this.data.datasets.forEach((entry: IReportEntry) => {
-				const chartLabelType = this.containerEl.createEl("div");
-
-				chartLabelType.createEl("span", {
-					text: `${entry.label}: ${
-						this.formatValue(
-							entry.data,
-							this.modelInfo.chartLabelType,
-						)
-					}`,
+			if (isReportEntries) {
+				// Handle IReportEntries[] type (like dividend analysis)
+				(this.data.datasets as IReportEntries[]).forEach((entry: IReportEntries) => {
+					const symbolDiv = this.containerEl.createEl("div");
+					symbolDiv.createEl("h4", { text: entry.label });
+					
+					entry.labels.forEach((label, index) => {
+						const entryDiv = symbolDiv.createEl("div");
+						
+						// Use specific format type if available in metadata, otherwise use model default
+						const formatType = entry.metadata?.formatTypes?.[index] || this.modelInfo.chartLabelType;
+						entryDiv.createEl("span", {
+							text: `${label}: ${this.formatValue(
+								entry.data[index],
+								formatType
+							)}`,
+						});
+					});
 				});
-			});
+			} else {
+				// Handle IReportEntry[] type (traditional reports)
+				(this.data.datasets as IReportEntry[]).forEach((entry: IReportEntry) => {
+					const chartLabelType = this.containerEl.createEl("div");
+
+					chartLabelType.createEl("span", {
+						text: `${entry.label}: ${
+							this.formatValue(
+								entry.data,
+								this.modelInfo.chartLabelType
+							)
+						}`,
+					});
+				});
+			}
 		} else if (!Array.isArray(this.data.datasets)) {
 			const { data, label, labels } = this.data
 				.datasets as IReportEntries;
