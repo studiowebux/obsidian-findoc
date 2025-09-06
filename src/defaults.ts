@@ -3,8 +3,9 @@ import { IPluginSettings } from "types";
 export const HEADER = "Category,Subcategory,Value,TimeStamp,Extra";
 
 export const COLORS: string[] = [
+	// Original colors (29 colors)
 	"#1ac18f",
-	"#EAE2B7",
+	"#EAE2B7", 
 	"#8ecae6",
 	"#219ebc",
 	"#026597",
@@ -32,6 +33,87 @@ export const COLORS: string[] = [
 	"#33a1fd",
 	"#7cd671",
 	"#22def7",
+	
+	// Additional vibrant colors (21 new colors)
+	"#ff4757", // Red
+	"#2ed573", // Green
+	"#1e90ff", // Blue
+	"#ffa502", // Orange
+	"#ff6348", // Coral
+	"#70a1ff", // Light Blue
+	"#5352ed", // Indigo
+	"#ff3838", // Bright Red
+	"#2f3542", // Dark Gray
+	"#57606f", // Gray
+	"#a4b0be", // Light Gray
+	"#ff9ff3", // Pink
+	"#54a0ff", // Sky Blue
+	"#5f27cd", // Purple
+	"#00d2d3", // Turquoise
+	"#ff9f43", // Light Orange
+	"#10ac84", // Teal
+	"#ee5a6f", // Rose
+	"#c44569", // Magenta
+	"#f8b500", // Amber
+	"#6c5ce7", // Lavender
+	
+	// Earthy & Professional colors (15 new colors)
+	"#8d6e63", // Brown
+	"#795548", // Dark Brown
+	"#607d8b", // Blue Gray
+	"#546e7a", // Dark Blue Gray
+	"#78909c", // Light Blue Gray
+	"#90a4ae", // Very Light Blue Gray
+	"#6d4c41", // Dark Brown
+	"#5d4037", // Very Dark Brown
+	"#455a64", // Dark Gray Blue
+	"#37474f", // Very Dark Gray Blue
+	"#263238", // Almost Black
+	"#424242", // Dark Gray
+	"#616161", // Medium Gray
+	"#757575", // Light Medium Gray
+	"#9e9e9e", // Light Gray
+	
+	// Pastel colors (15 new colors)
+	"#ffeaa7", // Pastel Yellow
+	"#fab1a0", // Pastel Orange
+	"#ff7675", // Pastel Red
+	"#fd79a8", // Pastel Pink
+	"#fdcb6e", // Pastel Gold
+	"#e17055", // Pastel Brown
+	"#81ecec", // Pastel Cyan
+	"#74b9ff", // Pastel Blue
+	"#a29bfe", // Pastel Purple
+	"#6c5ce7", // Pastel Indigo
+	"#00b894", // Pastel Green
+	"#00cec9", // Pastel Teal
+	"#55a3ff", // Pastel Light Blue
+	"#fd79a8", // Pastel Rose
+	"#fdcb6e", // Pastel Amber
+	
+	// Neon & Electric colors (10 new colors)
+	"#ff0080", // Electric Pink
+	"#00ff00", // Electric Green
+	"#00ffff", // Electric Cyan
+	"#ff00ff", // Electric Magenta
+	"#ffff00", // Electric Yellow
+	"#8000ff", // Electric Purple
+	"#ff8000", // Electric Orange
+	"#0080ff", // Electric Blue
+	"#80ff00", // Electric Lime
+	"#ff0040", // Electric Red
+	
+	// Metallic & Rich colors (10 new colors)
+	"#b8860b", // Dark Goldenrod
+	"#cd853f", // Peru
+	"#daa520", // Goldenrod
+	"#b22222", // Fire Brick
+	"#dc143c", // Crimson
+	"#800080", // Purple
+	"#4b0082", // Indigo
+	"#008b8b", // Dark Cyan
+	"#556b2f", // Dark Olive Green
+	"#8b4513", // Saddle Brown
 ];
 
 export const DEFAULT_SETTINGS: IPluginSettings = {
