@@ -61,6 +61,7 @@ export type IPluginSettings = {
 	minCharsToMatch: number;
 	categories: string[];
 	chartLabelTypes: string[];
+	version?: string;
 };
 
 export type IChartLabelTypes = "money" | "percent" | "generic" | "custom";
@@ -93,6 +94,8 @@ export type IChartLine = {
 	type: "line";
 	data: IDataset;
 	options: {
+		responsive: boolean;
+		maintainAspectRatio: boolean;
 		interaction: {
 			intersect: boolean;
 		};
@@ -114,11 +117,19 @@ export type IChartLine = {
 export type IChartPie = {
 	type: "pie";
 	data: IPieDataset;
+	options: {
+		responsive: boolean;
+		maintainAspectRatio: boolean;
+	};
 };
 
 export type IChartRadar = {
 	type: "radar";
 	data: IRadarDataset;
+	options: {
+		responsive: boolean;
+		maintainAspectRatio: boolean;
+	};
 };
 
 export type IContext = {

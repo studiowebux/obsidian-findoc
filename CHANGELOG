@@ -1,3 +1,19 @@
+### V0.8.0 - Beta - 2025-09-05 - (claude.ai Optimization)
+
+**Includes Breaking Changes**
+
+- CSV Parsing Optimization
+- Added Settings to create new "output functions" (Not fully tested)
+- Added new Models to process the data
+- Added Lazy loading for large data set and avoid blocking obsidian - only for large CSV
+- [Breaking Changes] - Default settings are now merged with user-defined configurations
+- Reworked CSS
+- Added tests and examples to use models/processors
+- Added better error handling and showing directly in snippet output
+- Tested all models: line, chart, table, text, report, pie, view, radar
+- Improved the responsiveness of charts (full width)
+- Sorting button has now visual feedback
+
 ### V0.7.4 - Beta - 2025-09-04
 
 - Fixed empty document and/or invalid date format

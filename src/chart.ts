@@ -37,6 +37,8 @@ export function chartLine(
 		type: "line",
 		data,
 		options: {
+			responsive: true,
+			maintainAspectRatio: false,
 			interaction: {
 				intersect: false,
 			},
@@ -147,6 +149,10 @@ export function chartPie(data: IPieDataset): IChartPie {
 	return {
 		type: "pie",
 		data,
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+		},
 	};
 }
 
@@ -154,5 +160,9 @@ export function chartRadar(data: IRadarDataset): IChartRadar {
 	return {
 		type: "radar",
 		data,
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+		},
 	};
 }

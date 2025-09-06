@@ -1,10 +1,20 @@
 import { Vault } from "obsidian";
 
 export async function loadCSVData(vault: Vault, filenames: string[]) {
-	let data: string[] = [];
+	const data: string[] = [];
+	
 	for (const filename of filenames) {
 		const content = await vault.adapter.read(filename);
-		data = [...data, ...content.split(/\r?\n/).slice(1)];
+		const lines = content.split(/\r?\n/);
+		
+		// Skip header and filter empty lines in single pass
+		for (let i = 1; i < lines.length; i++) {
+			const line = lines[i].trim();
+			if (line) {
+				data.push(line);
+			}
+		}
 	}
-	return data.filter((line) => line.trim() !== "").join("\n");
+	
+	return data.join("\n");
 }

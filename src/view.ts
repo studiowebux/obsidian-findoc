@@ -5,7 +5,8 @@ import up from "icons/up";
 import down from "icons/down";
 import remove from "icons/remove";
 import duplicate from "icons/duplicate";
-import { evaluate } from "mathjs";
+import { safeEvaluate, sanitizeTextInput, safeCreateIcon } from "security";
+import { LazyLoader, DEFAULT_LAZY_CONFIG } from "lazy-loading";
 
 export const VIEW_TYPE_CSV = "csv-view";
 
@@ -16,6 +17,8 @@ export class CSVView extends TextFileView {
 	div: HTMLElement;
 	parent: HTMLElement;
 	table: HTMLElement;
+	lazyLoader: LazyLoader<string>;
+	loadingIndicator: HTMLElement;
 
 	autocompleteData: { category: string; subcategory: string }[]; // store entries for local autocomplete
 
@@ -117,6 +120,22 @@ export class CSVView extends TextFileView {
 
 	createTable(data: string[]) {
 		this.div = this.contentEl.createDiv();
+		this.div.addClass('findoc-table-container');
+		
+		// Add loading indicator for large datasets
+		if (data.length > 500) {
+			const loadingDiv = this.div.createEl('div', {
+				cls: 'findoc-loading-overlay',
+				text: `Loading ${data.length} rows...`
+			});
+			// loadingDiv already has 'findoc-loading-overlay' class applied above
+			
+			// Remove loading indicator after table is built
+			setTimeout(() => {
+				loadingDiv.remove();
+			}, 100);
+		}
+		
 		this.table = this.div.createEl("table");
 
 		//
@@ -135,59 +154,20 @@ export class CSVView extends TextFileView {
 		this.table.appendChild(trHeaders);
 
 		//
-		// Table Content
+		// Table Content - Use progressive loading for better performance
 		//
-		data.slice(1).forEach((line) => {
-			const trContent = this.contentEl.createEl("tr");
-
-			const lineData = line.split(this.plugin.settings.csvSeparator);
-			lineData.push("ACTION");
-			lineData.forEach((el, idx) => {
-				const td = this.contentEl.createEl("td");
-				td.id = `data_${idx}`;
-				td.classList.add("findoc-line-data");
-				if (idx === 0) {
-					// DROPDOWN Column
-					td.appendChild(this.dropdown(el));
-				} else if (idx === 1 && this.plugin.settings.useAutocomplete) {
-					// AUTOCOMPLETE Column
-					td.appendChild(this.autocomplete(el, trContent));
-				} else if (idx === 2) {
-					// VALUE Column
-					td.innerText = el;
-					td.contentEditable = "true";
-					td.onblur = (_) => {
-						const input = td.innerText
-							.replaceAll(/<.*?>/g, "")
-							.replaceAll(/&(?:amp;)+nbsp;/g, "")
-							.replaceAll(
-								'&lt;br class="Apple-interchange-newline"&gt',
-								"",
-							);
-						try {
-							td.innerText = evaluate(input) ?? 0;
-						} catch (_) {
-							td.innerText = input;
-						}
-					};
-				} else if (idx === lineData.length - 1) {
-					// ACTIONS Column
-					td.appendChild(this.createBtnRemoveLine(trContent));
-					td.appendChild(this.createBtnMoveUp(trContent));
-					td.appendChild(this.createBtnMoveDown(trContent));
-					td.appendChild(this.createBtnDuplicate(trContent));
-				} else {
-					td.innerText = el;
-					td.contentEditable = "true";
-				}
-
-				trContent.appendChild(td);
-			});
-			this.table.appendChild(trContent);
-		});
+		const tableRows = data.slice(1); // Remove header
+		
+		if (tableRows.length > 50) {
+			// Use progressive loading for large datasets
+			this.renderRowsProgressively(tableRows);
+		} else {
+			// Render all rows immediately for small datasets
+			this.renderAllRowsSync(tableRows);
+		}
 
 		this.div.appendChild(this.table);
-		this.parent.appendChild(this.table);
+		this.parent.appendChild(this.div);
 
 		this.createBtnAddLine();
 		this.createBtnSort();
@@ -203,7 +183,7 @@ export class CSVView extends TextFileView {
 
 		btn.classList.add("findoc-btn-margin-top");
 		btn.id = "deleteRow";
-		btn.innerHTML = remove();
+		safeCreateIcon(btn, remove());
 		btn.onClickEvent(() => {
 			el.remove();
 			this.saveData();
@@ -217,7 +197,7 @@ export class CSVView extends TextFileView {
 
 		btn.classList.add("findoc-btn-margin-top");
 		btn.id = "moveUpRow";
-		btn.innerHTML = up();
+		safeCreateIcon(btn, up());
 		btn.onClickEvent(() => {
 			const children = Array.from(this.table.children);
 			const idx = children.indexOf(el);
@@ -234,7 +214,7 @@ export class CSVView extends TextFileView {
 
 		btn.classList.add("findoc-btn-margin-top");
 		btn.id = "moveDownRow";
-		btn.innerHTML = down();
+		safeCreateIcon(btn, down());
 		btn.onClickEvent(() => {
 			const children = Array.from(this.table.children);
 			const idx = children.indexOf(el);
@@ -251,7 +231,7 @@ export class CSVView extends TextFileView {
 
 		btn.classList.add("findoc-btn-margin-top");
 		btn.id = "duplicateRow";
-		btn.innerHTML = duplicate();
+		safeCreateIcon(btn, duplicate());
 		btn.onClickEvent(() => {
 			this.addLine(this.getLine(el as HTMLTableRowElement));
 			this.saveData();
@@ -302,40 +282,21 @@ export class CSVView extends TextFileView {
 						idx === 1 &&
 						this.plugin.settings.useAutocomplete
 					) {
-						// autocomplete
-						return i
-							.split(/<div/)[2]
+						// Autocomplete field - secure parsing
+						const rawContent = i.split(/<div/)[2] || "";
+						const cleanedContent = rawContent
 							.replaceAll(/<.*?>/g, "")
-							.replaceAll(/(.*?)>/g, "") // unclosed html tag, due to the split
-							.replaceAll(/&(?:amp;)+nbsp;/g, "")
-							.replaceAll(
-								'&lt;br class="Apple-interchange-newline"&gt',
-								"",
-							);
+							.replaceAll(/(.*?)>/g, "");
+						return sanitizeTextInput(cleanedContent);
 					} else if (idx === 2) {
-						// Value column only.
-						const input = i
-							.replaceAll(/<.*?>/g, "")
-							.replaceAll(/&(?:amp;)+nbsp;/g, "")
-							.replaceAll(
-								'&lt;br class="Apple-interchange-newline"&gt',
-								"",
-							);
-						try {
-							return evaluate(input) ?? 0;
-						} catch (_) {
-							return input;
-						}
+						// Value column only - secure evaluation
+						const rawInput = i.replaceAll(/<.*?>/g, "");
+						const sanitizedInput = sanitizeTextInput(rawInput);
+						return safeEvaluate(sanitizedInput);
 					} else {
-						// Input field
-						const input = i
-							.replaceAll(/<.*?>/g, "")
-							.replaceAll(/&(?:amp;)+nbsp;/g, "")
-							.replaceAll(
-								'&lt;br class="Apple-interchange-newline"&gt',
-								"",
-							);
-						return input;
+						// Input field - sanitize content
+						const rawInput = i.replaceAll(/<.*?>/g, "");
+						return sanitizeTextInput(rawInput);
 					}
 				})
 				.join(this.plugin.settings.csvSeparator)
@@ -388,14 +349,36 @@ export class CSVView extends TextFileView {
 		btn.classList.add("findoc-btn-margin-top", "findoc-btn-margin-right");
 		btn.id = "sortByDate";
 		btn.innerText = "Sort by Date";
-		btn.onClickEvent(() => {
-			this.tableData = this.sortByDate(this.getTableData()).filter(
-				(r) => r.length !== 0,
-			); // Clear empty lines
+		btn.onClickEvent(async () => {
+			// Show loading state
+			const originalText = btn.innerText;
+			btn.innerText = "Sorting...";
+			btn.disabled = true;
+			btn.classList.add("findoc-btn-loading");
 
-			this.tableData = [this.tableHeader, ...this.tableData];
-			this.setViewData(this.tableData.join("\n"), true);
-			this.saveData();
+			try {
+				// Use setTimeout to allow UI to update before heavy operation
+				await new Promise(resolve => setTimeout(resolve, 10));
+
+				this.tableData = this.sortByDate(this.getTableData()).filter(
+					(r) => r.length !== 0,
+				); // Clear empty lines
+
+				this.tableData = [this.tableHeader, ...this.tableData];
+				this.setViewData(this.tableData.join("\n"), true);
+				this.saveData();
+
+				// Show completion feedback
+				btn.innerText = "Sorted ✓";
+				setTimeout(() => {
+					btn.innerText = originalText;
+				}, 2000);
+
+			} finally {
+				// Reset button state
+				btn.disabled = false;
+				btn.classList.remove("findoc-btn-loading");
+			}
 		});
 		this.parent.appendChild(btn);
 	}
@@ -460,12 +443,31 @@ export class CSVView extends TextFileView {
 	}
 
 	getLine(tr: HTMLTableRowElement) {
+		if (!tr || !tr.children || tr.children.length < 5) {
+			return ["Portfolio", "", "0", getToday(), "", "ACTION"];
+		}
+		
+		const getElementText = (index: number): string => {
+			const element = tr.children.item(index) as HTMLElement;
+			if (!element) return "";
+			
+			if (index === 0) {
+				// Select element
+				const select = element.firstChild as HTMLSelectElement;
+				return select?.value || this.plugin.settings.categories[0] || "Portfolio";
+			} else {
+				// Regular text element - sanitize the content
+				const text = element.innerText || element.textContent || "";
+				return sanitizeTextInput(text);
+			}
+		};
+		
 		return [
-			(tr.children.item(0).firstChild as HTMLSelectElement).value, // we want the current value of the select element.
-			(tr.children.item(1) as HTMLElement).innerText,
-			(tr.children.item(2) as HTMLElement).innerText,
-			(tr.children.item(3) as HTMLElement).innerText,
-			(tr.children.item(4) as HTMLElement).innerText,
+			getElementText(0),
+			getElementText(1),
+			getElementText(2),
+			getElementText(3),
+			getElementText(4),
 			"ACTION",
 		];
 	}
@@ -487,18 +489,10 @@ export class CSVView extends TextFileView {
 				td.innerText = el;
 				td.contentEditable = "true";
 				td.onblur = (_) => {
-					const input = td.innerText
-						.replaceAll(/<.*?>/g, "")
-						.replaceAll(/&(?:amp;)+nbsp;/g, "")
-						.replaceAll(
-							'&lt;br class="Apple-interchange-newline"&gt',
-							"",
-						);
-					try {
-						td.innerText = evaluate(input) ?? 0;
-					} catch (_) {
-						td.innerText = input;
-					}
+					const rawInput = td.innerText;
+					const sanitizedInput = sanitizeTextInput(rawInput);
+					const result = safeEvaluate(sanitizedInput);
+					td.innerText = result.toString();
 				};
 			} else if (idx === lineData.length - 1) {
 				td.appendChild(this.createBtnRemoveLine(trContent));
@@ -506,8 +500,17 @@ export class CSVView extends TextFileView {
 				td.appendChild(this.createBtnMoveDown(trContent));
 				td.appendChild(this.createBtnDuplicate(trContent));
 			} else {
-				td.innerText = el;
+				td.innerText = sanitizeTextInput(el);
 				td.contentEditable = "true";
+				
+				// Add input validation for contentEditable
+				td.addEventListener('input', (event) => {
+					const target = event.target as HTMLElement;
+					const sanitized = sanitizeTextInput(target.innerText || "");
+					if (sanitized !== target.innerText) {
+						target.innerText = sanitized;
+					}
+				});
 			}
 			trContent.appendChild(td);
 		});
@@ -556,6 +559,14 @@ export class CSVView extends TextFileView {
 	}
 
 	saveData() {
+		const startTime = Date.now();
+		const rowCount = this.tableData.length;
+		
+		// Show loading for large datasets
+		if (rowCount > 100) {
+			this.showLoading("Saving data...");
+		}
+
 		this.tableData = this.getTableData()
 			// Clear empty lines
 			.filter((r) => r.length !== 0);
@@ -563,11 +574,21 @@ export class CSVView extends TextFileView {
 		this.tableData = [this.tableHeader, ...this.tableData];
 		this.requestSave();
 
-		// TODO: Replace this timeout with the proper and recommended way.
-		new Notice("Saving in progress...", 2005);
+		// Show appropriate notice based on data size
+		const duration = Date.now() - startTime;
+		if (rowCount > 100) {
+			new Notice(`Saved ${rowCount} rows (${duration}ms)`, 3000);
+			this.hideLoading();
+		} else {
+			new Notice("Saved", 1500);
+		}
+		
 		this.refreshAutocomplete();
 
-		document.getElementById("information").remove();
+		const infoEl = document.getElementById("information");
+		if (infoEl) {
+			infoEl.remove();
+		}
 		this.createSectionInformation();
 	}
 
@@ -580,5 +601,151 @@ export class CSVView extends TextFileView {
 
 	getViewType() {
 		return VIEW_TYPE_CSV;
+	}
+
+	/**
+	 * Show loading state with optional progress
+	 */
+	showLoading(message: string = "Loading...", progress?: number) {
+		let loadingEl = this.contentEl.querySelector('.findoc-loading-indicator') as HTMLElement;
+		
+		if (!loadingEl) {
+			loadingEl = this.contentEl.createEl('div', {
+				cls: 'findoc-loading-indicator'
+			});
+			// Styling handled by CSS class
+		}
+		
+		let text = message;
+		if (progress !== undefined) {
+			text += ` (${Math.round(progress * 100)}%)`;
+		}
+		
+		loadingEl.innerText = text;
+		loadingEl.addClass('visible');
+		loadingEl.removeClass('hidden');
+	}
+
+	/**
+	 * Hide loading indicator
+	 */
+	hideLoading() {
+		const loadingEl = this.contentEl.querySelector('.findoc-loading-indicator') as HTMLElement;
+		if (loadingEl) {
+			loadingEl.addClass('hidden');
+			loadingEl.removeClass('visible');
+		}
+	}
+
+	/**
+	 * Render all rows synchronously for small datasets
+	 */
+	renderAllRowsSync(rows: string[]) {
+		rows.forEach(line => this.createSingleTableRow(line));
+	}
+
+	/**
+	 * Render rows progressively for large datasets
+	 */
+	async renderRowsProgressively(rows: string[]) {
+		const batchSize = 25; // Rows per batch
+		const totalBatches = Math.ceil(rows.length / batchSize);
+		let currentBatch = 0;
+
+		this.showLoading(`Loading rows 0/${rows.length}`);
+
+		const renderBatch = async () => {
+			if (currentBatch >= totalBatches) {
+				this.hideLoading();
+				return;
+			}
+
+			const startIdx = currentBatch * batchSize;
+			const endIdx = Math.min(startIdx + batchSize, rows.length);
+			const batch = rows.slice(startIdx, endIdx);
+
+			// Render this batch
+			batch.forEach(line => this.createSingleTableRow(line));
+
+			currentBatch++;
+			const progress = currentBatch / totalBatches;
+			this.showLoading(`Loading rows ${endIdx}/${rows.length}`, progress);
+
+			// Schedule next batch
+			if (currentBatch < totalBatches) {
+				// Use requestAnimationFrame to keep UI responsive
+				requestAnimationFrame(() => {
+					setTimeout(renderBatch, 1); // Small delay to prevent blocking
+				});
+			} else {
+				this.hideLoading();
+			}
+		};
+
+		// Start rendering
+		renderBatch();
+	}
+
+	/**
+	 * Create a single table row (extracted and secured)
+	 */
+	createSingleTableRow(line: string) {
+		const trContent = this.contentEl.createEl("tr");
+
+		const lineData = line.split(this.plugin.settings.csvSeparator);
+		lineData.push("ACTION");
+		lineData.forEach((el, idx) => {
+			const td = this.contentEl.createEl("td");
+			td.id = `data_${idx}`;
+			td.classList.add("findoc-line-data");
+			if (idx === 0) {
+				// DROPDOWN Column
+				td.appendChild(this.dropdown(el));
+			} else if (idx === 1 && this.plugin.settings.useAutocomplete) {
+				// AUTOCOMPLETE Column
+				td.appendChild(this.autocomplete(el, trContent));
+			} else if (idx === 2) {
+				// VALUE Column - secure evaluation
+				td.innerText = sanitizeTextInput(el);
+				td.contentEditable = "true";
+				td.onblur = (_) => {
+					const rawInput = td.innerText;
+					const sanitizedInput = sanitizeTextInput(rawInput);
+					const result = safeEvaluate(sanitizedInput);
+					td.innerText = result.toString();
+				};
+				
+				// Real-time input validation
+				td.addEventListener('input', (event) => {
+					const target = event.target as HTMLElement;
+					const sanitized = sanitizeTextInput(target.innerText || "");
+					if (sanitized !== target.innerText) {
+						target.innerText = sanitized;
+					}
+				});
+			} else if (idx === lineData.length - 1) {
+				// ACTIONS Column
+				td.appendChild(this.createBtnRemoveLine(trContent));
+				td.appendChild(this.createBtnMoveUp(trContent));
+				td.appendChild(this.createBtnMoveDown(trContent));
+				td.appendChild(this.createBtnDuplicate(trContent));
+			} else {
+				// Regular contentEditable field - secure
+				td.innerText = sanitizeTextInput(el);
+				td.contentEditable = "true";
+				
+				// Real-time input validation
+				td.addEventListener('input', (event) => {
+					const target = event.target as HTMLElement;
+					const sanitized = sanitizeTextInput(target.innerText || "");
+					if (sanitized !== target.innerText) {
+						target.innerText = sanitized;
+					}
+				});
+			}
+
+			trContent.appendChild(td);
+		});
+		this.table.appendChild(trContent);
 	}
 }

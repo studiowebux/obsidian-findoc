@@ -21,14 +21,13 @@
 ## About
 
 -   Open and Edit CSV Files in Obsidian
--   Generate Charts using the CSV File directly in Obsidian and a Custom Code Block
--   Generate Report using the CSV data.
--   Configurable using Few Settings
+-   Generate Charts (Line, Pie, Radar) and Table Reports using CSV data
+-   Advanced Model Management: Add, edit, duplicate, and delete custom models via settings
+-   Enhanced Data Processing: Quarter/week splitting, category analysis, value ranges
+-   Resizable charts with professional table views
 -   Support Desktop and Mobile (tested on Windows, MacOS and Iphone)
--   Using [Chart.js](https://www.chartjs.org)
--   Line chart, Pie chart and Radar chart
+-   Using [Chart.js](https://www.chartjs.org) and [mathjs](https://mathjs.org)
 -   Plugin for [Obsidian.md](https://obsidian.md)
--   Evaluate mathematic expressions directly in the _value_ column, powered by [mathjs](https://mathjs.org)
 
 ---
 
@@ -45,17 +44,6 @@
 ---
 
 ## Changelog
-
-### TODO
-
--   [-] Copy paste is broken while editing a CSV File (not able to reproduce)
--   [] Improve the setting tab (edit, add and remove models)
--   [] Add more functions to process and analyze the data
--   [POC] Add reports in table view
-
-### V0.7.4 - Beta - 2025-09-04
-
-- Fixed empty document and/or invalid date format
 
 See [CHANGELOG](./CHANGELOG)
 

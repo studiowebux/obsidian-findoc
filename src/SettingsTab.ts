@@ -16,9 +16,45 @@ export default class SettingsTab extends PluginSettingTab {
 		loadIcons();
 	}
 
+	// Helper function for common button styles
+	private styleButton(button: HTMLElement, extraStyles = ''): void {
+		button.style.cssText = `
+			margin-bottom: 10px;
+			padding: 6px 12px;
+			border: 1px solid var(--border-color);
+			border-radius: 4px;
+			background: var(--interactive-normal);
+			color: var(--text-normal);
+			cursor: pointer;
+			${extraStyles}
+		`;
+	}
+
+	// Helper function for modal styles
+	private getModalStyles(): string {
+		return `
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background: var(--background-primary);
+			border: 2px solid var(--border-color);
+			border-radius: 8px;
+			padding: 20px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+			z-index: 9999;
+			min-width: 300px;
+		`;
+	}
+
+	// Helper function for button container styles
+	private getButtonContainerStyles(): string {
+		return 'display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;';
+	}
+
 	createNewColorBtn(): HTMLElement {
 		const btn = this.containerEl.createEl("button");
-		btn.classList.add("findoc-btn-margin-bottom");
+		this.styleButton(btn);
 		btn.id = "newColor";
 		btn.innerText = "Add New Color";
 		btn.onClickEvent(() => {
@@ -30,7 +66,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 	createNewCategoryBtn(): HTMLElement {
 		const btn = this.containerEl.createEl("button");
-		btn.classList.add("findoc-btn-margin-bottom");
+		this.styleButton(btn);
 		btn.id = "newType";
 		btn.innerText = "Add New Category";
 		btn.onClickEvent(() => {
@@ -42,7 +78,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 	createReloadModelsBtn(): HTMLElement {
 		const btn = this.containerEl.createEl("button");
-		btn.classList.add("findoc-btn-margin-bottom");
+		this.styleButton(btn, 'background: var(--text-warning); color: white;');
 		btn.id = "reloadModels";
 		btn.innerText = "Load Default Models (clears custom models)";
 		btn.onClickEvent(async () => {
@@ -244,8 +280,18 @@ export default class SettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Models")
-			.setDesc("Models available (It must be a JSON.stringify version)");
-		this.createReloadModelsBtn();
+			.setDesc("Models available - Create, edit, or delete models for different data views");
+		
+		const modelControlsDiv = containerEl.createDiv();
+		modelControlsDiv.classList.add("findoc-model-controls");
+		
+		// Model management buttons
+		const addModelBtn = modelControlsDiv.createEl("button");
+		addModelBtn.classList.add("findoc-btn-margin-right");
+		addModelBtn.innerText = "Add New Model";
+		addModelBtn.onclick = () => this.createNewModel();
+		
+		modelControlsDiv.appendChild(this.createReloadModelsBtn());
 
 		const div = containerEl.createDiv();
 		div.classList.add("findoc-models-container");
@@ -256,6 +302,80 @@ export default class SettingsTab extends PluginSettingTab {
 			const el = modelSection.createEl("h1");
 			el.innerText = "Model: " + name;
 			modelSection.classList.add("findoc-model-section");
+			
+			// Model management buttons
+			const modelHeaderDiv = modelSection.createDiv();
+			modelHeaderDiv.classList.add("findoc-model-header");
+			modelHeaderDiv.appendChild(el);
+			
+			const modelActionsDiv = modelHeaderDiv.createDiv();
+			modelActionsDiv.classList.add("findoc-model-actions");
+			
+			const duplicateBtn = modelActionsDiv.createEl("button");
+			duplicateBtn.innerText = "Duplicate";
+			duplicateBtn.classList.add("findoc-btn-small", "findoc-btn-margin-right");
+			duplicateBtn.onclick = () => this.duplicateModel(key, model);
+			
+			const deleteBtn = modelActionsDiv.createEl("button");
+			deleteBtn.innerText = "Delete";
+			deleteBtn.classList.add("findoc-btn-small", "findoc-btn-danger");
+			deleteBtn.onclick = () => this.deleteModel(key);
+
+			// Snippet examples section
+			const snippetSection = modelSection.createDiv();
+			snippetSection.classList.add("findoc-snippet-section");
+			
+			const snippetHeader = snippetSection.createEl("h4");
+			snippetHeader.innerText = "Usage Examples";
+			snippetHeader.classList.add("findoc-snippet-header");
+			
+			const snippetContainer = snippetSection.createDiv();
+			snippetContainer.classList.add("findoc-snippet-container");
+			
+			// Generate different snippet examples based on model output type
+			const snippets = this.generateSnippetsForModel(key, model);
+			snippets.forEach((snippet, index) => {
+				const snippetDiv = snippetContainer.createDiv();
+				snippetDiv.classList.add("findoc-snippet-item");
+				
+				// Add warning class for incompatible snippets
+				if (!snippet.compatible) {
+					snippetDiv.classList.add("findoc-snippet-warning");
+				}
+				
+				const snippetLabel = snippetDiv.createEl("span");
+				snippetLabel.classList.add("findoc-snippet-label");
+				snippetLabel.innerText = snippet.label;
+				
+				// Add warning text if present
+				if (snippet.warning) {
+					const warningSpan = snippetDiv.createEl("span");
+					warningSpan.classList.add("findoc-snippet-warning-text");
+					warningSpan.innerText = snippet.warning;
+				}
+				
+				const snippetCode = snippetDiv.createEl("code");
+				snippetCode.classList.add("findoc-snippet-code");
+				if (!snippet.compatible) {
+					snippetCode.classList.add("findoc-snippet-code-disabled");
+				}
+				snippetCode.innerText = snippet.code;
+				
+				const copyBtn = snippetDiv.createEl("button");
+				copyBtn.innerText = snippet.compatible ? "Copy" : "Info";
+				copyBtn.classList.add("findoc-btn-small", "findoc-btn-copy");
+				if (!snippet.compatible) {
+					copyBtn.classList.add("findoc-btn-disabled");
+					copyBtn.title = snippet.warning || "This view type is not compatible with this model";
+				}
+				copyBtn.onclick = () => {
+					if (snippet.compatible) {
+						this.copyToClipboard(snippet.code, `${snippet.label} snippet copied!`);
+					} else {
+						new Notice(snippet.warning || "This view type is not compatible with this model", 5000);
+					}
+				};
+			});
 
 			// PREPARATION
 			new Setting(modelSection)
@@ -494,5 +614,341 @@ export default class SettingsTab extends PluginSettingTab {
 					});
 				});
 		});
+	}
+
+	/**
+	 * Create a new model with default settings
+	 */
+	async createNewModel() {
+		const modelName = await this.promptForModelName();
+		if (!modelName || modelName.trim() === '') {
+			return;
+		}
+
+		const sanitizedName = modelName.toLowerCase().replace(/[^a-z0-9]/g, '');
+		if (this.plugin.settings.models[sanitizedName]) {
+			new Notice(`Model "${sanitizedName}" already exists!`);
+			return;
+		}
+
+		// Create new model with default settings
+		this.plugin.settings.models[sanitizedName] = {
+			dataSource: "splitByYearMonth",
+			categories: ["Portfolio"],
+			output: "generateSumDataSet",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: ""
+		};
+
+		await this.plugin.saveSettings();
+		new Notice(`Model "${sanitizedName}" created successfully!`);
+		this.display(); // Refresh the settings display
+	}
+
+	/**
+	 * Duplicate an existing model
+	 */
+	async duplicateModel(originalKey: string, originalModel: any) {
+		const newModelName = await this.promptForModelName(`Copy of ${originalKey}`);
+		if (!newModelName || newModelName.trim() === '') {
+			return;
+		}
+
+		const sanitizedName = newModelName.toLowerCase().replace(/[^a-z0-9]/g, '');
+		if (this.plugin.settings.models[sanitizedName]) {
+			new Notice(`Model "${sanitizedName}" already exists!`);
+			return;
+		}
+
+		// Deep copy the original model
+		this.plugin.settings.models[sanitizedName] = {
+			dataSource: originalModel.dataSource,
+			categories: [...originalModel.categories],
+			output: originalModel.output,
+			beginAtZero: originalModel.beginAtZero,
+			chartLabelType: originalModel.chartLabelType,
+			dataSourceKey: originalModel.dataSourceKey,
+			values: originalModel.values || ""
+		};
+
+		await this.plugin.saveSettings();
+		new Notice(`Model "${sanitizedName}" duplicated successfully!`);
+		this.display(); // Refresh the settings display
+	}
+
+	/**
+	 * Delete a model with confirmation
+	 */
+	async deleteModel(modelKey: string) {
+		const confirmed = await this.confirmDelete(modelKey);
+		if (!confirmed) {
+			return;
+		}
+
+		delete this.plugin.settings.models[modelKey];
+		await this.plugin.saveSettings();
+		new Notice(`Model "${modelKey}" deleted successfully!`);
+		this.display(); // Refresh the settings display
+	}
+
+	/**
+	 * Prompt user for model name
+	 */
+	async promptForModelName(defaultName: string = ''): Promise<string | null> {
+		return new Promise((resolve) => {
+			const modal = document.createElement('div');
+			modal.style.cssText = this.getModalStyles() + 'width: 300px; z-index: 10000;';
+
+			const title = modal.createEl('h3');
+			title.innerText = 'Enter Model Name';
+
+			const input = modal.createEl('input');
+			input.type = 'text';
+			input.value = defaultName;
+			input.style.cssText = `
+				width: 100%;
+				padding: 8px;
+				margin: 10px 0;
+				border: 1px solid var(--border-color);
+				border-radius: 4px;
+				background: var(--background-secondary);
+				color: var(--text-normal);
+				box-sizing: border-box;
+			`;
+
+			const buttonsDiv = modal.createDiv();
+			buttonsDiv.style.cssText = this.getButtonContainerStyles();
+
+			const cancelBtn = buttonsDiv.createEl('button');
+			cancelBtn.innerText = 'Cancel';
+			this.styleButton(cancelBtn, 'margin-bottom: 0;');
+			cancelBtn.onclick = () => {
+				modal.remove();
+				resolve(null);
+			};
+
+			const okBtn = buttonsDiv.createEl('button');
+			okBtn.innerText = 'OK';
+			this.styleButton(okBtn, 'background: var(--interactive-accent); color: var(--text-on-accent); margin-bottom: 0;');
+			okBtn.onclick = () => {
+				modal.remove();
+				resolve(input.value);
+			};
+
+			input.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') {
+					okBtn.click();
+				} else if (e.key === 'Escape') {
+					cancelBtn.click();
+				}
+			});
+
+			document.body.appendChild(modal);
+			input.focus();
+			input.select();
+		});
+	}
+
+	/**
+	 * Confirm deletion with user
+	 */
+	async confirmDelete(modelKey: string): Promise<boolean> {
+		return new Promise((resolve) => {
+			const modal = document.createElement('div');
+			modal.style.cssText = this.getModalStyles() + 'width: 350px; z-index: 10000;';
+
+			const title = modal.createEl('h3');
+			title.innerText = 'Confirm Deletion';
+			title.style.color = 'var(--text-error)';
+
+			const message = modal.createEl('p');
+			message.innerText = `Are you sure you want to delete the model "${modelKey}"? This action cannot be undone.`;
+
+			const buttonsDiv = modal.createDiv();
+			buttonsDiv.style.cssText = this.getButtonContainerStyles();
+
+			const cancelBtn = buttonsDiv.createEl('button');
+			cancelBtn.innerText = 'Cancel';
+			this.styleButton(cancelBtn, 'margin-bottom: 0;');
+			cancelBtn.onclick = () => {
+				modal.remove();
+				resolve(false);
+			};
+
+			const deleteBtn = buttonsDiv.createEl('button');
+			deleteBtn.innerText = 'Delete';
+			this.styleButton(deleteBtn, 'background: var(--text-error); color: var(--text-on-accent); margin-bottom: 0;');
+			deleteBtn.onclick = () => {
+				modal.remove();
+				resolve(true);
+			};
+
+			document.addEventListener('keydown', function escHandler(e) {
+				if (e.key === 'Escape') {
+					cancelBtn.click();
+					document.removeEventListener('keydown', escHandler);
+				}
+			});
+
+			document.body.appendChild(modal);
+			cancelBtn.focus();
+		});
+	}
+
+	/**
+	 * Generate snippet examples for a model
+	 */
+	generateSnippetsForModel(modelKey: string, model: any): { label: string; code: string; compatible: boolean; warning?: string }[] {
+		const snippets = [];
+		const isReportOnly = this.isReportModel(model);
+		const isChartCompatible = !isReportOnly;
+		
+		// Basic chart snippet
+		if (isChartCompatible) {
+			snippets.push({
+				label: "Chart",
+				compatible: true,
+				code: `\`\`\`findoc
+filename: your-data.csv
+model: ${modelKey}
+view: chart
+title: ${this.toTitleCase(modelKey)}
+\`\`\``
+			});
+		} else {
+			snippets.push({
+				label: "Chart",
+				compatible: false,
+				warning: "⚠️ Not compatible - Use report/table views instead",
+				code: `<!-- Model "${modelKey}" is not compatible with chart views -->
+<!-- Use view: report or view: table instead -->`
+			});
+		}
+
+		// Pie chart snippet (if suitable for pie charts)
+		if (this.isSuitableForPieChart(model) && isChartCompatible) {
+			snippets.push({
+				label: "Pie Chart",
+				compatible: true,
+				code: `\`\`\`findoc
+filename: your-data.csv
+model: ${modelKey}
+view: pie
+title: ${this.toTitleCase(modelKey)} Distribution
+\`\`\``
+			});
+		} else if (!isChartCompatible) {
+			snippets.push({
+				label: "Pie Chart",
+				compatible: false,
+				warning: "⚠️ Report model - Not compatible with pie charts",
+				code: `<!-- Model "${modelKey}" is not compatible with pie charts -->
+<!-- Use view: report or view: table instead -->`
+			});
+		}
+
+		// Radar chart snippet (if suitable)
+		if (this.isSuitableForRadarChart(model) && isChartCompatible) {
+			snippets.push({
+				label: "Radar Chart",
+				compatible: true,
+				code: `\`\`\`findoc
+filename: your-data.csv
+model: ${modelKey}
+view: radar
+title: ${this.toTitleCase(modelKey)} Radar
+\`\`\``
+			});
+		}
+
+		// Report/Table snippets for report models
+		if (isReportOnly) {
+			snippets.push({
+				label: "Text Report",
+				compatible: true,
+				code: `\`\`\`findoc
+filename: your-data.csv
+model: ${modelKey}
+view: report
+date: 2025-09-01
+\`\`\``
+			});
+
+			snippets.push({
+				label: "Table Report",
+				compatible: true,
+				code: `\`\`\`findoc
+filename: your-data.csv
+model: ${modelKey}
+view: table
+date: 2025-09-01
+\`\`\``
+			});
+		}
+
+		return snippets;
+	}
+
+	/**
+	 * Check if model is suitable for pie charts
+	 */
+	isSuitableForPieChart(model: any): boolean {
+		// Models with "PerTypes" output or subcategory/category splits work well as pie charts
+		return model.output.includes('PerTypes') || 
+			   model.dataSource.includes('Subcategory') || 
+			   model.dataSource.includes('Category') ||
+			   model.dataSource.includes('ValueRange');
+	}
+
+	/**
+	 * Check if model is suitable for radar charts
+	 */
+	isSuitableForRadarChart(model: any): boolean {
+		// Similar to pie charts, models with multiple categories work well as radar
+		return model.categories && model.categories.length > 2 && 
+			   (model.output.includes('generateSumDataSet') || 
+			    model.output.includes('PerTypes'));
+	}
+
+	/**
+	 * Check if model is a report model
+	 */
+	isReportModel(model: any): boolean {
+		return model.output.includes('report') || 
+			   model.output.includes('getLastValue');
+	}
+
+	/**
+	 * Convert camelCase/kebab-case to Title Case
+	 */
+	toTitleCase(str: string): string {
+		return str
+			.replace(/([A-Z])/g, ' $1') // Add space before capitals
+			.replace(/^./, (char) => char.toUpperCase()) // Capitalize first letter
+			.replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
+	}
+
+	/**
+	 * Copy text to clipboard and show notice
+	 */
+	async copyToClipboard(text: string, message: string) {
+		try {
+			await navigator.clipboard.writeText(text);
+			new Notice(message, 3000);
+		} catch (err) {
+			// Fallback for browsers that don't support clipboard API
+			const textArea = document.createElement('textarea');
+			textArea.value = text;
+			textArea.style.position = 'fixed';
+			textArea.style.left = '-999999px';
+			textArea.style.top = '-999999px';
+			document.body.appendChild(textArea);
+			textArea.select();
+			document.execCommand('copy');
+			textArea.remove();
+			new Notice(message, 3000);
+		}
 	}
 }

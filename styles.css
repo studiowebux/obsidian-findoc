@@ -148,6 +148,251 @@ table td {
 
 /** Canvas */
 .chart-container {
-	width: 60%;
-	margin: 0 auto;
+	width: 100%;
+	height: 50vh;
+	margin: 20px auto;
+	resize: both;
+	overflow: hidden;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	padding: 10px;
+	background: var(--background-primary);
+	min-width: 300px;
+	min-height: 250px;
+	box-sizing: border-box;
+}
+
+/* Larger size for radar charts */
+.chart-container[data-chart-type="radar"] {
+	width: 100%;
+	height: 50vh;
+	margin: 20px auto;
+	resize: both;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+/* Canvas element inside container should fill the space */
+.chart-container canvas {
+	max-width: 100% !important;
+	max-height: 100% !important;
+}
+
+/* Snippet styling for settings */
+.findoc-snippet-section {
+	margin: 15px 0;
+	padding: 15px;
+	background: var(--background-secondary-alt);
+	border-radius: 8px;
+	border: 1px solid var(--border-color);
+}
+
+.findoc-snippet-header {
+	margin: 0 0 10px 0;
+	color: var(--text-muted);
+	font-size: 14px;
+}
+
+.findoc-snippet-container {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.findoc-snippet-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px;
+	background: var(--background-primary);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+}
+
+.findoc-snippet-label {
+	font-weight: 600;
+	color: var(--text-accent);
+	min-width: 80px;
+	font-size: 12px;
+}
+
+.findoc-snippet-code {
+	flex: 1;
+	background: var(--background-primary-alt);
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-family: var(--font-monospace);
+	font-size: 11px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	border: 1px solid var(--border-color);
+}
+
+.findoc-btn-copy {
+	padding: 4px 8px !important;
+	font-size: 11px !important;
+	background: var(--interactive-accent) !important;
+	color: var(--text-on-accent) !important;
+	border: none !important;
+	border-radius: 4px !important;
+}
+
+.findoc-btn-copy:hover {
+	background: var(--interactive-accent-hover) !important;
+}
+
+/* Warning states for incompatible snippets */
+.findoc-snippet-warning {
+	border-color: var(--text-warning) !important;
+	background: var(--background-modifier-error-hover) !important;
+}
+
+.findoc-snippet-warning-text {
+	color: var(--text-warning);
+	font-size: 10px;
+	font-weight: 500;
+	margin-left: 5px;
+}
+
+.findoc-snippet-code-disabled {
+	opacity: 0.6;
+	background: var(--background-modifier-error) !important;
+	color: var(--text-muted) !important;
+}
+
+.findoc-btn-disabled {
+	background: var(--text-warning) !important;
+	color: var(--text-on-accent) !important;
+	opacity: 0.8;
+}
+
+.findoc-btn-disabled:hover {
+	background: var(--text-error) !important;
+}
+
+/* Table Style */
+
+.findoc-report-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 10px 0;
+	font-family: var(--font-interface);
+	border: 1px solid var(--border-color);
+}
+
+.findoc-report-table th,
+.findoc-report-table td {
+	padding: 8px 12px;
+	text-align: left;
+	border: 1px solid var(--border-color);
+}
+
+.findoc-report-table th {
+	background-color: var(--background-secondary);
+	font-weight: 600;
+	color: var(--text-normal);
+}
+
+.findoc-report-table tr:nth-child(even) {
+	background-color: var(--background-secondary-alt);
+}
+
+.findoc-report-table tr:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.findoc-report-table td:last-child {
+	text-align: right;
+}
+
+/* Error Styling for main.ts */
+.findoc-error-container {
+	border: 2px solid var(--text-error);
+	background: var(--background-modifier-error);
+	padding: 15px;
+	margin: 10px 0;
+	border-radius: 8px;
+	font-family: var(--font-interface);
+}
+
+.findoc-error-title {
+	color: var(--text-on-accent);
+	margin: 0 0 8px 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+}
+
+.findoc-error-details {
+	margin: 0 0 10px 0;
+	color: var(--text-on-accent);
+	background: var(--text-error);
+	padding: 8px;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.findoc-error-snippet-info {
+	background: var(--background-primary);
+	padding: 10px;
+	border-radius: 4px;
+	border: 1px solid var(--border-color);
+	font-family: var(--font-monospace);
+	font-size: 12px;
+	white-space: pre-line;
+}
+
+.findoc-error-help {
+	margin: 10px 0 0 0;
+	font-size: 12px;
+	color: var(--text-normal);
+	background: var(--background-primary);
+	padding: 8px;
+	border-radius: 4px;
+	border: 1px solid var(--border-color);
+}
+
+.findoc-general-error {
+	color: var(--text-error);
+	padding: 10px;
+	border: 1px solid var(--text-error);
+	border-radius: 4px;
+}
+
+/* Loading indicators for view.ts */
+.findoc-loading-overlay {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	padding: 10px 20px;
+	background: var(--background-primary);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	z-index: 1000;
+	font-size: 14px;
+}
+
+.findoc-loading-indicator {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	padding: 8px 16px;
+	background: var(--background-primary);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	z-index: 1000;
+	font-size: 12px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.findoc-loading-indicator.hidden {
+	display: none;
+}
+
+.findoc-loading-indicator.visible {
+	display: block;
 }

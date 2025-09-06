@@ -8,13 +8,16 @@ export function getCategories(
 	categoriesToSelect: string[],
 	input: Array<IInput>
 ) {
-	return Object.values(input)
-		.filter((line) => categoriesToSelect.includes(line.category))
-		.reduce((categories, current) => {
-			if (!categories.includes(current.subcategory))
-				categories.push(current.subcategory);
-			return categories;
-		}, []);
+	const categorySet = new Set(categoriesToSelect);
+	const subcategorySet = new Set<string>();
+	
+	for (const item of input) {
+		if (categorySet.has(item.category)) {
+			subcategorySet.add(item.subcategory);
+		}
+	}
+	
+	return Array.from(subcategorySet);
 }
 
 function processing(
@@ -45,26 +48,35 @@ function processing(
 	// For each entry, we keep only the one required by the model. It is filtered by the category.
 	const categories = getCategories(model.categories, json);
 	// Generator function
-	const output: IDataset = functions[model.output].exec({
+	const output = functions[model.output].exec({
 		categoriesToSelect: model.categories,
 		input: splitBy[model.dataSource].exec(json, model.dataSourceKey),
 		labels,
 		categories,
 		colors,
 		values: model.values ? model.values.split(",") : [],
-	}) as IDataset;
+	});
+
+	// Check if output is compatible with chart rendering
+	const isChartData = output && 'labels' in output && 'datasets' in output && Array.isArray((output as any).datasets);
+	
+	if (!isChartData) {
+		throw new Error(`Model "${modelToGenerate}" with output "${model.output}" is not compatible with chart views. Use 'view: report' or 'view: table' instead.`);
+	}
+
+	const chartData = output as IDataset;
 
 	if (chartType === "line") {
 		return chartLine(
-			output,
+			chartData,
 			model.chartLabelType,
 			model.suffix,
 			model.beginAtZero
 		);
 	} else if (chartType === "pie") {
-		return chartPie(convert_to_pie_chart(output));
+		return chartPie(convert_to_pie_chart(chartData));
 	} else if (chartType === "radar") {
-		return chartRadar(convert_to_radar_chart(output));
+		return chartRadar(convert_to_radar_chart(chartData));
 	}
 }
 

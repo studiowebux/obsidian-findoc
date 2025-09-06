@@ -47,6 +47,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		"Dividend",
 		"House Expenses",
 		"Expenses",
+		"Debt",
 		"Generic",
 	],
 	useLastElementAsTemplate: true,
@@ -150,6 +151,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 				"Expenses",
 				"House Expenses",
 				"Dividend",
+				"Debt",
 			],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
@@ -279,8 +281,93 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 			dataSourceKey: "timestamp",
 			values: "",
 		},
+
+		// NEW MODELS WITH NEW PROCESSING FUNCTIONS
+
+		expensesQuarterly: {
+			dataSource: "splitByQuarter",
+			categories: ["House Expenses", "Expenses"],
+			output: "generateSumDataSet",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		incomeWeekly: {
+			dataSource: "splitByWeek",
+			categories: ["Income"],
+			output: "generateSumDataSet",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		portfolioByValueRange: {
+			dataSource: "splitByValueRange",
+			categories: ["Portfolio"],
+			output: "generateSumDataSetPerTypes",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "value",
+			values: "",
+		},
+
+		expensesMonthlyBreakdown: {
+			dataSource: "splitByYearMonth",
+			categories: ["House Expenses", "Expenses"],
+			output: "generateSumDataSetPerTypes",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		allCategoriesBreakdown: {
+			dataSource: "splitByCategory",
+			categories: ["Portfolio", "Income", "House Expenses", "Expenses", "Dividend"],
+			output: "generateSumDataSetPerTypes",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "category",
+			values: "",
+		},
+
+		// REPORT MODELS FOR TABLE VIEW
+
+		portfolioReportTable: {
+			dataSource: "splitByYearMonth",
+			categories: ["Portfolio", "Income", "Cotisation", "Expenses", "House Expenses", "Dividend", "Debt"],
+			output: "getLastValuePerTypeForCurrentMonth",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		quarterlyIncomeExpenseReport: {
+			dataSource: "splitByQuarter",
+			categories: ["Income", "House Expenses", "Expenses"],
+			output: "reportSum",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "Income, House Expenses, Expenses",
+		},
+
+		weeklyExpenseAnalysis: {
+			dataSource: "splitByWeek",
+			categories: ["House Expenses", "Expenses"],
+			output: "reportSum",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "House Expenses, Expenses",
+		},
 	},
 	colors: COLORS,
 	debounce: "1000",
 	csvSeparator: ",",
+	version: "0.8.0",
 };
