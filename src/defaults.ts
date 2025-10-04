@@ -5,7 +5,7 @@ export const HEADER = "Category,Subcategory,Value,TimeStamp,Extra";
 export const COLORS: string[] = [
 	// Original colors (29 colors)
 	"#1ac18f",
-	"#EAE2B7", 
+	"#EAE2B7",
 	"#8ecae6",
 	"#219ebc",
 	"#026597",
@@ -33,7 +33,7 @@ export const COLORS: string[] = [
 	"#33a1fd",
 	"#7cd671",
 	"#22def7",
-	
+
 	// Additional vibrant colors (21 new colors)
 	"#ff4757", // Red
 	"#2ed573", // Green
@@ -56,7 +56,7 @@ export const COLORS: string[] = [
 	"#c44569", // Magenta
 	"#f8b500", // Amber
 	"#6c5ce7", // Lavender
-	
+
 	// Earthy & Professional colors (15 new colors)
 	"#8d6e63", // Brown
 	"#795548", // Dark Brown
@@ -73,7 +73,7 @@ export const COLORS: string[] = [
 	"#616161", // Medium Gray
 	"#757575", // Light Medium Gray
 	"#9e9e9e", // Light Gray
-	
+
 	// Pastel colors (15 new colors)
 	"#ffeaa7", // Pastel Yellow
 	"#fab1a0", // Pastel Orange
@@ -90,7 +90,7 @@ export const COLORS: string[] = [
 	"#55a3ff", // Pastel Light Blue
 	"#fd79a8", // Pastel Rose
 	"#fdcb6e", // Pastel Amber
-	
+
 	// Neon & Electric colors (10 new colors)
 	"#ff0080", // Electric Pink
 	"#00ff00", // Electric Green
@@ -102,7 +102,7 @@ export const COLORS: string[] = [
 	"#0080ff", // Electric Blue
 	"#80ff00", // Electric Lime
 	"#ff0040", // Electric Red
-	
+
 	// Metallic & Rich colors (10 new colors)
 	"#b8860b", // Dark Goldenrod
 	"#cd853f", // Peru
@@ -130,6 +130,9 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		"House Expenses",
 		"Expenses",
 		"Debt",
+		"Borrowable Money",
+		"Credit Line",
+		"Loan",
 		"Generic",
 	],
 	useLastElementAsTemplate: true,
@@ -408,7 +411,13 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 
 		allCategoriesBreakdown: {
 			dataSource: "splitByCategory",
-			categories: ["Portfolio", "Income", "House Expenses", "Expenses", "Dividend"],
+			categories: [
+				"Portfolio",
+				"Income",
+				"House Expenses",
+				"Expenses",
+				"Dividend",
+			],
 			output: "generateSumDataSetPerTypes",
 			beginAtZero: true,
 			chartLabelType: "money",
@@ -420,7 +429,15 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 
 		portfolioReportTable: {
 			dataSource: "splitByYearMonth",
-			categories: ["Portfolio", "Income", "Cotisation", "Expenses", "House Expenses", "Dividend", "Debt"],
+			categories: [
+				"Portfolio",
+				"Income",
+				"Cotisation",
+				"Expenses",
+				"House Expenses",
+				"Dividend",
+				"Debt",
+			],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -494,5 +511,5 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 	colors: COLORS,
 	debounce: "1000",
 	csvSeparator: ",",
-	version: "0.8.0",
+	version: "0.8.3",
 };

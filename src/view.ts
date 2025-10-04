@@ -21,10 +21,46 @@ export class CSVView extends TextFileView {
 	loadingIndicator: HTMLElement;
 
 	autocompleteData: { category: string; subcategory: string }[]; // store entries for local autocomplete
+	backupHistory: string[] = []; // Store last 10 backups
+	maxBackups = 10;
 
 	constructor(leaf: WorkspaceLeaf, plugin: FinDocPlugin) {
 		super(leaf);
 		this.plugin = plugin;
+	}
+
+	/**
+	 * Create a backup snapshot before destructive operations
+	 */
+	createBackup() {
+		if (!this.tableData || this.tableData.length === 0) return;
+
+		const backup = this.tableData.join("\n");
+		this.backupHistory.push(backup);
+
+		// Keep only last N backups
+		if (this.backupHistory.length > this.maxBackups) {
+			this.backupHistory.shift();
+		}
+	}
+
+	/**
+	 * Restore from last backup
+	 */
+	restoreBackup(): boolean {
+		if (this.backupHistory.length === 0) {
+			new Notice("No backup available");
+			return false;
+		}
+
+		const backup = this.backupHistory.pop();
+		if (backup) {
+			this.setViewData(backup, true);
+			this.saveData();
+			new Notice("Backup restored successfully");
+			return true;
+		}
+		return false;
 	}
 
 	getViewData() {
@@ -171,6 +207,7 @@ export class CSVView extends TextFileView {
 
 		this.createBtnAddLine();
 		this.createBtnSort();
+		this.createBtnRestoreBackup();
 		if (this.plugin.settings.useAutocomplete) {
 			this.createBtnRefreshAutocomplete();
 		}
@@ -260,6 +297,17 @@ export class CSVView extends TextFileView {
 					"ACTION",
 				]);
 			}
+		});
+		this.parent.appendChild(btn);
+	}
+
+	createBtnRestoreBackup() {
+		const btn = this.contentEl.createEl("button");
+		btn.classList.add("findoc-btn-margin-top", "findoc-btn-margin-right");
+		btn.id = "restoreBackup";
+		btn.innerText = `Restore Backup (${this.backupHistory.length})`;
+		btn.onClickEvent(() => {
+			this.restoreBackup();
 		});
 		this.parent.appendChild(btn);
 	}
@@ -357,6 +405,9 @@ export class CSVView extends TextFileView {
 			btn.classList.add("findoc-btn-loading");
 
 			try {
+				// Create backup before destructive operation
+				this.createBackup();
+
 				// Use setTimeout to allow UI to update before heavy operation
 				await new Promise(resolve => setTimeout(resolve, 10));
 
@@ -374,6 +425,11 @@ export class CSVView extends TextFileView {
 					btn.innerText = originalText;
 				}, 2000);
 
+			} catch (e) {
+				// Restore backup on error
+				new Notice(`Sort failed: ${e.message}. Restoring backup...`);
+				this.restoreBackup();
+				btn.innerText = originalText;
 			} finally {
 				// Reset button state
 				btn.disabled = false;
@@ -502,15 +558,6 @@ export class CSVView extends TextFileView {
 			} else {
 				td.innerText = sanitizeTextInput(el);
 				td.contentEditable = "true";
-				
-				// Add input validation for contentEditable
-				td.addEventListener('input', (event) => {
-					const target = event.target as HTMLElement;
-					const sanitized = sanitizeTextInput(target.innerText || "");
-					if (sanitized !== target.innerText) {
-						target.innerText = sanitized;
-					}
-				});
 			}
 			trContent.appendChild(td);
 		});
@@ -714,15 +761,6 @@ export class CSVView extends TextFileView {
 					const result = safeEvaluate(sanitizedInput);
 					td.innerText = result.toString();
 				};
-				
-				// Real-time input validation
-				td.addEventListener('input', (event) => {
-					const target = event.target as HTMLElement;
-					const sanitized = sanitizeTextInput(target.innerText || "");
-					if (sanitized !== target.innerText) {
-						target.innerText = sanitized;
-					}
-				});
 			} else if (idx === lineData.length - 1) {
 				// ACTIONS Column
 				td.appendChild(this.createBtnRemoveLine(trContent));
@@ -733,15 +771,6 @@ export class CSVView extends TextFileView {
 				// Regular contentEditable field - secure
 				td.innerText = sanitizeTextInput(el);
 				td.contentEditable = "true";
-				
-				// Real-time input validation
-				td.addEventListener('input', (event) => {
-					const target = event.target as HTMLElement;
-					const sanitized = sanitizeTextInput(target.innerText || "");
-					if (sanitized !== target.innerText) {
-						target.innerText = sanitized;
-					}
-				});
 			}
 
 			trContent.appendChild(td);

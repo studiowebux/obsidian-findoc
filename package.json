@@ -1,6 +1,6 @@
 {
 	"name": "findoc",
-	"version": "0.8.2",
+	"version": "0.8.3",
 	"description": "Financial Documentation and Tracking using CSV format and Chart.js directly in Obsidian",
 	"main": "main.js",
 	"scripts": {

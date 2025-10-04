@@ -40,19 +40,24 @@ export default class FinDocPlugin extends Plugin {
 
 	async loadSettings() {
 		const savedData = await this.loadData();
-		
+
 		// Deep merge settings, especially models
 		this.settings = {
 			...DEFAULT_SETTINGS,
-			...savedData,
+			...(savedData || {}),
 			models: {
 				...DEFAULT_SETTINGS.models,
-				...savedData.models
+				...(savedData?.models || {})
 			}
 		};
 
 		// Run migration for new models
 		await this.migrateSettings();
+
+		// Save settings if data.json was empty/missing
+		if (!savedData || Object.keys(savedData).length === 0) {
+			await this.saveSettings();
+		}
 	}
 
 	async migrateSettings() {
