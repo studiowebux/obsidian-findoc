@@ -5,8 +5,8 @@ import up from "icons/up";
 import down from "icons/down";
 import remove from "icons/remove";
 import duplicate from "icons/duplicate";
-import { safeEvaluate, sanitizeTextInput, safeCreateIcon } from "security";
-import { LazyLoader, DEFAULT_LAZY_CONFIG } from "lazy-loading";
+import { safeCreateIcon, safeEvaluate, sanitizeTextInput } from "security";
+import { DEFAULT_LAZY_CONFIG, LazyLoader } from "lazy-loading";
 
 export const VIEW_TYPE_CSV = "csv-view";
 
@@ -23,6 +23,7 @@ export class CSVView extends TextFileView {
 	autocompleteData: { category: string; subcategory: string }[]; // store entries for local autocomplete
 	backupHistory: string[] = []; // Store last 10 backups
 	maxBackups = 10;
+	isRendering = false; // Track if progressive rendering is in progress
 
 	constructor(leaf: WorkspaceLeaf, plugin: FinDocPlugin) {
 		super(leaf);
@@ -55,8 +56,15 @@ export class CSVView extends TextFileView {
 
 		const backup = this.backupHistory.pop();
 		if (backup) {
+			// Update tableData directly from backup
+			this.tableData = backup.split("\n");
+
+			// Save using requestSave (not saveData which parses HTML)
+			this.requestSave();
+
+			// Rebuild UI
 			this.setViewData(backup, true);
-			this.saveData();
+
 			new Notice("Backup restored successfully");
 			return true;
 		}
@@ -156,22 +164,22 @@ export class CSVView extends TextFileView {
 
 	createTable(data: string[]) {
 		this.div = this.contentEl.createDiv();
-		this.div.addClass('findoc-table-container');
-		
+		this.div.addClass("findoc-table-container");
+
 		// Add loading indicator for large datasets
 		if (data.length > 500) {
-			const loadingDiv = this.div.createEl('div', {
-				cls: 'findoc-loading-overlay',
-				text: `Loading ${data.length} rows...`
+			const loadingDiv = this.div.createEl("div", {
+				cls: "findoc-loading-overlay",
+				text: `Loading ${data.length} rows...`,
 			});
 			// loadingDiv already has 'findoc-loading-overlay' class applied above
-			
+
 			// Remove loading indicator after table is built
 			setTimeout(() => {
 				loadingDiv.remove();
 			}, 100);
 		}
-		
+
 		this.table = this.div.createEl("table");
 
 		//
@@ -193,7 +201,7 @@ export class CSVView extends TextFileView {
 		// Table Content - Use progressive loading for better performance
 		//
 		const tableRows = data.slice(1); // Remove header
-		
+
 		if (tableRows.length > 50) {
 			// Use progressive loading for large datasets
 			this.renderRowsProgressively(tableRows);
@@ -313,42 +321,38 @@ export class CSVView extends TextFileView {
 	}
 
 	getTableData() {
-		const rows = this.table.innerHTML.split(new RegExp(/<tr.*?>/));
-		return rows.map((column) =>
-			column
-				.split(new RegExp(/<td.*?>/))
-				.slice(1)
-				.filter((i) => !new RegExp(/<button.*?>.*<.*?>/).test(i))
-				.map((i, idx) => {
-					if (idx === 0) {
-						// Select (Dropdown)
-						return (
-							i.split('value="')[1].split('"')[0] ||
-							this.plugin.settings.categories[0]
-						);
-					} else if (
-						idx === 1 &&
-						this.plugin.settings.useAutocomplete
-					) {
-						// Autocomplete field - secure parsing
-						const rawContent = i.split(/<div/)[2] || "";
-						const cleanedContent = rawContent
-							.replaceAll(/<.*?>/g, "")
-							.replaceAll(/(.*?)>/g, "");
-						return sanitizeTextInput(cleanedContent);
-					} else if (idx === 2) {
-						// Value column only - secure evaluation
-						const rawInput = i.replaceAll(/<.*?>/g, "");
-						const sanitizedInput = sanitizeTextInput(rawInput);
-						return safeEvaluate(sanitizedInput);
-					} else {
-						// Input field - sanitize content
-						const rawInput = i.replaceAll(/<.*?>/g, "");
-						return sanitizeTextInput(rawInput);
-					}
-				})
-				.join(this.plugin.settings.csvSeparator)
-		);
+		const rows = Array.from(this.table.querySelectorAll("tr"));
+
+		return rows.slice(1).map((row: HTMLTableRowElement) => {
+			const cells = Array.from(row.querySelectorAll("td"));
+			const values: string[] = [];
+
+			cells.forEach((cell, idx) => {
+				// Skip the actions column (last column with buttons)
+				if (idx === cells.length - 1) return;
+
+				if (idx === 0) {
+					// Dropdown/Select column
+					const select = cell.querySelector(
+						"select",
+					) as HTMLSelectElement;
+					values.push(
+						select?.value || this.plugin.settings.categories[0],
+					);
+				} else if (idx === 1 && this.plugin.settings.useAutocomplete) {
+					// Autocomplete column
+					const contentDiv = cell.querySelector(
+						'div[contenteditable="true"]',
+					) as HTMLElement;
+					values.push(sanitizeTextInput(contentDiv?.innerText || ""));
+				} else {
+					// Regular contentEditable cells
+					values.push(sanitizeTextInput(cell.innerText || ""));
+				}
+			});
+
+			return values.join(this.plugin.settings.csvSeparator);
+		});
 	}
 
 	sortByDate(data: string[]) {
@@ -398,6 +402,14 @@ export class CSVView extends TextFileView {
 		btn.id = "sortByDate";
 		btn.innerText = "Sort by Date";
 		btn.onClickEvent(async () => {
+			// Prevent sorting during progressive rendering
+			if (this.isRendering) {
+				new Notice(
+					"Please wait for all rows to finish loading before sorting",
+				);
+				return;
+			}
+
 			// Show loading state
 			const originalText = btn.innerText;
 			btn.innerText = "Sorting...";
@@ -409,22 +421,28 @@ export class CSVView extends TextFileView {
 				this.createBackup();
 
 				// Use setTimeout to allow UI to update before heavy operation
-				await new Promise(resolve => setTimeout(resolve, 10));
+				await new Promise((resolve) => setTimeout(resolve, 10));
 
-				this.tableData = this.sortByDate(this.getTableData()).filter(
+				// Use tableData directly instead of parsing from HTML (which might be incomplete during lazy loading)
+				const dataToSort = this.tableData.slice(1); // Skip header
+				const sortedData = this.sortByDate(dataToSort).filter(
 					(r) => r.length !== 0,
-				); // Clear empty lines
+				);
 
-				this.tableData = [this.tableHeader, ...this.tableData];
+				// Update tableData with header and sorted data
+				this.tableData = [this.tableHeader, ...sortedData];
+
+				// Save BEFORE clearing/rebuilding the view
+				this.requestSave();
+
+				// Now rebuild the UI
 				this.setViewData(this.tableData.join("\n"), true);
-				this.saveData();
 
 				// Show completion feedback
 				btn.innerText = "Sorted ✓";
 				setTimeout(() => {
 					btn.innerText = originalText;
 				}, 2000);
-
 			} catch (e) {
 				// Restore backup on error
 				new Notice(`Sort failed: ${e.message}. Restoring backup...`);
@@ -502,22 +520,23 @@ export class CSVView extends TextFileView {
 		if (!tr || !tr.children || tr.children.length < 5) {
 			return ["Portfolio", "", "0", getToday(), "", "ACTION"];
 		}
-		
+
 		const getElementText = (index: number): string => {
 			const element = tr.children.item(index) as HTMLElement;
 			if (!element) return "";
-			
+
 			if (index === 0) {
 				// Select element
 				const select = element.firstChild as HTMLSelectElement;
-				return select?.value || this.plugin.settings.categories[0] || "Portfolio";
+				return select?.value || this.plugin.settings.categories[0] ||
+					"Portfolio";
 			} else {
 				// Regular text element - sanitize the content
 				const text = element.innerText || element.textContent || "";
 				return sanitizeTextInput(text);
 			}
 		};
-		
+
 		return [
 			getElementText(0),
 			getElementText(1),
@@ -608,7 +627,7 @@ export class CSVView extends TextFileView {
 	saveData() {
 		const startTime = Date.now();
 		const rowCount = this.tableData.length;
-		
+
 		// Show loading for large datasets
 		if (rowCount > 100) {
 			this.showLoading("Saving data...");
@@ -629,7 +648,7 @@ export class CSVView extends TextFileView {
 		} else {
 			new Notice("Saved", 1500);
 		}
-		
+
 		this.refreshAutocomplete();
 
 		const infoEl = document.getElementById("information");
@@ -654,33 +673,37 @@ export class CSVView extends TextFileView {
 	 * Show loading state with optional progress
 	 */
 	showLoading(message: string = "Loading...", progress?: number) {
-		let loadingEl = this.contentEl.querySelector('.findoc-loading-indicator') as HTMLElement;
-		
+		let loadingEl = this.contentEl.querySelector(
+			".findoc-loading-indicator",
+		) as HTMLElement;
+
 		if (!loadingEl) {
-			loadingEl = this.contentEl.createEl('div', {
-				cls: 'findoc-loading-indicator'
+			loadingEl = this.contentEl.createEl("div", {
+				cls: "findoc-loading-indicator",
 			});
 			// Styling handled by CSS class
 		}
-		
+
 		let text = message;
 		if (progress !== undefined) {
 			text += ` (${Math.round(progress * 100)}%)`;
 		}
-		
+
 		loadingEl.innerText = text;
-		loadingEl.addClass('visible');
-		loadingEl.removeClass('hidden');
+		loadingEl.addClass("visible");
+		loadingEl.removeClass("hidden");
 	}
 
 	/**
 	 * Hide loading indicator
 	 */
 	hideLoading() {
-		const loadingEl = this.contentEl.querySelector('.findoc-loading-indicator') as HTMLElement;
+		const loadingEl = this.contentEl.querySelector(
+			".findoc-loading-indicator",
+		) as HTMLElement;
 		if (loadingEl) {
-			loadingEl.addClass('hidden');
-			loadingEl.removeClass('visible');
+			loadingEl.addClass("hidden");
+			loadingEl.removeClass("visible");
 		}
 	}
 
@@ -688,22 +711,24 @@ export class CSVView extends TextFileView {
 	 * Render all rows synchronously for small datasets
 	 */
 	renderAllRowsSync(rows: string[]) {
-		rows.forEach(line => this.createSingleTableRow(line));
+		rows.forEach((line) => this.createSingleTableRow(line));
 	}
 
 	/**
 	 * Render rows progressively for large datasets
 	 */
 	async renderRowsProgressively(rows: string[]) {
-		const batchSize = 25; // Rows per batch
+		const batchSize = 100; // Rows per batch
 		const totalBatches = Math.ceil(rows.length / batchSize);
 		let currentBatch = 0;
 
+		this.isRendering = true;
 		this.showLoading(`Loading rows 0/${rows.length}`);
 
 		const renderBatch = async () => {
 			if (currentBatch >= totalBatches) {
 				this.hideLoading();
+				this.isRendering = false;
 				return;
 			}
 
@@ -712,7 +737,7 @@ export class CSVView extends TextFileView {
 			const batch = rows.slice(startIdx, endIdx);
 
 			// Render this batch
-			batch.forEach(line => this.createSingleTableRow(line));
+			batch.forEach((line) => this.createSingleTableRow(line));
 
 			currentBatch++;
 			const progress = currentBatch / totalBatches;
@@ -726,6 +751,7 @@ export class CSVView extends TextFileView {
 				});
 			} else {
 				this.hideLoading();
+				this.isRendering = false;
 			}
 		};
 

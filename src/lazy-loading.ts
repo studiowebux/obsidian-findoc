@@ -11,10 +11,10 @@ export interface LazyLoadConfig {
 }
 
 export const DEFAULT_LAZY_CONFIG: LazyLoadConfig = {
-	itemsPerPage: 50,     // Items to show initially
-	initialLoad: 50,      // First batch size
-	loadIncrement: 25,    // Items to add per scroll
-	scrollThreshold: 0.8  // Scroll percentage to trigger load
+	itemsPerPage: 100, // Items to show initially
+	initialLoad: 100, // First batch size
+	loadIncrement: 100, // Items to add per scroll
+	scrollThreshold: 0.8, // Scroll percentage to trigger load
 };
 
 export class LazyLoader<T> {
@@ -31,13 +31,13 @@ export class LazyLoader<T> {
 		container: HTMLElement,
 		config: LazyLoadConfig = DEFAULT_LAZY_CONFIG,
 		onRender: (items: T[], append: boolean) => void,
-		onLoadComplete?: () => void
+		onLoadComplete?: () => void,
 	) {
 		this.container = container;
 		this.config = config;
 		this.onRender = onRender;
 		this.onLoadComplete = onLoadComplete;
-		
+
 		this.setupScrollListener();
 	}
 
@@ -93,12 +93,14 @@ export class LazyLoader<T> {
 		if (initialBatch.length > 0) {
 			this.renderedData = [...initialBatch];
 			this.onRender(initialBatch, false);
-			
+
 			// Schedule background loading of remaining items
 			this.scheduleBackgroundLoading();
 		}
-		
-		if (this.onLoadComplete && this.renderedData.length === this.data.length) {
+
+		if (
+			this.onLoadComplete && this.renderedData.length === this.data.length
+		) {
 			this.onLoadComplete();
 		}
 	}
@@ -110,11 +112,11 @@ export class LazyLoader<T> {
 		const start = this.currentPage * this.config.itemsPerPage;
 		const end = start + count;
 		const batch = this.data.slice(start, Math.min(end, this.data.length));
-		
+
 		if (batch.length > 0) {
 			this.currentPage++;
 		}
-		
+
 		return batch;
 	}
 
@@ -127,19 +129,22 @@ export class LazyLoader<T> {
 		}
 
 		this.isLoading = true;
-		
+
 		// Use requestAnimationFrame for smooth loading
 		requestAnimationFrame(() => {
 			const nextBatch = this.getNextBatch(this.config.loadIncrement);
-			
+
 			if (nextBatch.length > 0) {
 				this.renderedData.push(...nextBatch);
 				this.onRender(nextBatch, true);
 			}
-			
+
 			this.isLoading = false;
-			
-			if (this.onLoadComplete && this.renderedData.length === this.data.length) {
+
+			if (
+				this.onLoadComplete &&
+				this.renderedData.length === this.data.length
+			) {
 				this.onLoadComplete();
 			}
 		});
@@ -157,7 +162,7 @@ export class LazyLoader<T> {
 		const loadNextChunk = () => {
 			if (this.renderedData.length < this.data.length) {
 				const nextBatch = this.getNextBatch(this.config.loadIncrement);
-				
+
 				if (nextBatch.length > 0) {
 					this.renderedData.push(...nextBatch);
 					this.onRender(nextBatch, true);
@@ -194,7 +199,7 @@ export class LazyLoader<T> {
 
 		// Throttle scroll events
 		let scrollTimeout: NodeJS.Timeout;
-		this.container.addEventListener('scroll', () => {
+		this.container.addEventListener("scroll", () => {
 			clearTimeout(scrollTimeout);
 			scrollTimeout = setTimeout(onScroll, 50);
 		});
@@ -208,7 +213,7 @@ export class LazyLoader<T> {
 			const remaining = this.data.slice(this.renderedData.length);
 			this.renderedData.push(...remaining);
 			this.onRender(remaining, true);
-			
+
 			if (this.onLoadComplete) {
 				this.onLoadComplete();
 			}
@@ -223,7 +228,9 @@ export class LazyLoader<T> {
 			totalItems: this.data.length,
 			renderedItems: this.renderedData.length,
 			isLoading: this.isLoading,
-			progress: this.data.length > 0 ? this.renderedData.length / this.data.length : 0
+			progress: this.data.length > 0
+				? this.renderedData.length / this.data.length
+				: 0,
 		};
 	}
 
@@ -232,7 +239,7 @@ export class LazyLoader<T> {
 	 */
 	destroy(): void {
 		// Remove event listeners and cleanup
-		this.container.removeEventListener('scroll', () => {});
+		this.container.removeEventListener("scroll", () => {});
 		this.data = [];
 		this.renderedData = [];
 	}
