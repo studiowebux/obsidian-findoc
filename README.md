@@ -2,15 +2,15 @@
 
 <img src="./docs/findoc-256.png" alt="Findoc Logo" width="256">
 
-<h2>Yet Another Tool - Fin Doc</h2>
+<h2>Obsidian Fin Doc</h2>
 
 <p>Obsidian.md plugin to read and edit a CSV file, then use it as a data source to generate charts.</p>
 <p>I invite you to create PR and Issues with ideas, improvements and etc.</p>
 
 <p align="center">
-  <a href="https://github.com/yet-another-tool/obsidian-findoc/issues">Report Bug</a>
+  <a href="https://github.com/studiowebux/obsidian-findoc/issues">Report Bug</a>
   ·
-  <a href="https://github.com/yet-another-tool/obsidian-findoc/issues">Request Feature</a>
+  <a href="https://github.com/studiowebux/obsidian-findoc/issues">Request Feature</a>
   ·
   <a href="https://discord.gg/SseMxexTF6">Discord Support</a>
 </p>
@@ -20,27 +20,20 @@
 
 ## About
 
--   Open and Edit CSV Files in Obsidian
--   Generate Charts (Line, Pie, Radar) and Table Reports using CSV data
--   Advanced Model Management: Add, edit, duplicate, and delete custom models via settings
--   Enhanced Data Processing: Quarter/week splitting, category analysis, value ranges
--   Resizable charts with professional table views
--   Support Desktop and Mobile (tested on Windows, MacOS and Iphone)
--   Using [Chart.js](https://www.chartjs.org) and [mathjs](https://mathjs.org)
--   Plugin for [Obsidian.md](https://obsidian.md)
+- Open and Edit CSV Files in Obsidian
+- Generate Charts (Line, Pie, Radar) and Table Reports using CSV data
+- Advanced Model Management: Add, edit, duplicate, and delete custom models via settings
+- Enhanced Data Processing: Quarter/week splitting, category analysis, value ranges
+- Resizable charts with professional table views
+- Support Desktop and Mobile (tested on Windows, MacOS and Iphone)
+- Using [Chart.js](https://www.chartjs.org) and [mathjs](https://mathjs.org)
+- Plugin for [Obsidian.md](https://obsidian.md)
 
 ---
 
 ## Installation and Usage
 
-[Full Documentation is available here](https://studiowebux.github.io/obsidian-plugins-docs/docs/category/plugin-financial-doc)
-
----
-
-## Screenshots
-
-[See Screenshots here](https://studiowebux.github.io/obsidian-plugins-docs/docs/findoc/screenshots/Demo)
-
+[Full Documentation is available here](https://studiowebux.github.io/obsidian-findoc/)
 ---
 
 ## Changelog
@@ -60,61 +53,10 @@ git push origin tags/X.Y.Z
 
 ## Contributing
 
-1. Create a Feature Branch
+1. Fork Repository
 2. Commit your changes
 3. Push your changes
 4. Create a PR
-
-<details>
-<summary>Working with your local branch</summary>
-
-**Branch Checkout:**
-
-```bash
-git checkout -b <feature|fix|release|chore|hotfix>/prefix-name
-```
-
-> Your branch name must starts with [feature|fix|release|chore|hotfix] and use a / before the name;
-> Use hyphens as separator;
-> The prefix correspond to your Kanban tool id (e.g. abc-123)
-
-**Keep your branch synced:**
-
-```bash
-git fetch origin
-git rebase origin/master
-```
-
-**Commit your changes:**
-
-```bash
-git add .
-git commit -m "<feat|ci|test|docs|build|chore|style|refactor|perf|BREAKING CHANGE>: commit message"
-```
-
-> Follow this convention commitlint for your commit message structure
-
-**Push your changes:**
-
-```bash
-git push origin <feature|fix|release|chore|hotfix>/prefix-name
-```
-
-**Examples:**
-
-```bash
-git checkout -b release/v1.15.5
-git checkout -b feature/abc-123-something-awesome
-git checkout -b hotfix/abc-432-something-bad-to-fix
-```
-
-```bash
-git commit -m "docs: added awesome documentation"
-git commit -m "feat: added new feature"
-git commit -m "test: added tests"
-```
-
-</details>
 
 ### Local Development
 
@@ -123,13 +65,27 @@ npm install
 npm run build
 ```
 
+### Documentation
+
+```bash
+minimaldoc build \
+    --base-url / \
+    --description "Obsidian.md plugin to read and edit a CSV file, then use it as a data source to generate charts." \
+    --title "Obsidian FinDoc" \
+    --llms \
+    --output ./output \
+    ./docs/
+    
+python -m http.server -d output 8003
+```
+
 ## License
 
 Distributed under the MIT License. See LICENSE for more information.
 
 ## Contact
 
--   Tommy Gingras @ tommy@studiowebux.com | Studio Webux
+- Tommy Gingras @ tommy@studiowebux.com | Studio Webux
 
 <div>
 <b> | </b>
@@ -146,5 +102,8 @@ Distributed under the MIT License. See LICENSE for more information.
         alt="Webux Logo"
         style="height: 30px !important"
 /> Webux Lab</a>
+<b> | </b>
+<a href="https://studiowebux.com" target="_blank"
+      >Studio Webux</a>
 <b> | </b>
 </div>
