@@ -21,7 +21,7 @@ jobs:
 
             - name: Build static files
               id: build
-              run: minimaldoc build --base-url / --description "Obsidian.md plugin to read and edit a CSV file, then use it as a data source to generate charts." --title "Obsidian FinDoc" --llms --output ./output ./doc
+              run: minimaldoc build --base-url / --description "Obsidian.md plugin to read and edit a CSV file, then use it as a data source to generate charts." --title "Obsidian FinDoc" --llms --output ./output ./docs
 
             - name: Upload static files as artifact
               id: deployment
