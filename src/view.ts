@@ -585,7 +585,8 @@ export class CSVView extends TextFileView {
 
 	setViewData(data: string, clear: boolean) {
 		if (clear) this.clear();
-		this.tableData = data.split("\n");
+		// Filter out empty lines (trailing newlines create empty strings)
+		this.tableData = data.split("\n").filter(line => line.trim().length > 0);
 
 		if (this.plugin.settings.useAutocomplete) {
 			// Extract Autocomplete Data

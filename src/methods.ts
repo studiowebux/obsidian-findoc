@@ -970,4 +970,86 @@ export const functions: {
 			};
 		},
 	},
+
+	reportBySubcategory: {
+		help: "Report: Group and sum by subcategory (expense/income names)",
+		exec: ({
+			categoriesToSelect,
+			input,
+			date = undefined,
+		}: {
+			categoriesToSelect: string[];
+			input: { [key: string]: IInput[] };
+			date: string | undefined;
+		}): IReportData => {
+			let allEntries: IInput[];
+			let dateLabel: string;
+
+			if (date) {
+				// Filter for specific month
+				const d = new Date(date);
+				const monthKey = `${d.getUTCFullYear()}-${getMonth(d)}`;
+				allEntries = (input[monthKey] || [])
+					.filter(entry => categoriesToSelect.includes(entry.category));
+				dateLabel = monthKey;
+			} else {
+				// Use all entries across all time periods
+				allEntries = Object.values(input)
+					.flat()
+					.filter(entry => categoriesToSelect.includes(entry.category));
+				dateLabel = "All Time";
+			}
+
+			// Group by subcategory and sum values
+			const subcategoryTotals: { [subcategory: string]: number } = {};
+			allEntries.forEach(entry => {
+				if (!subcategoryTotals[entry.subcategory]) {
+					subcategoryTotals[entry.subcategory] = 0;
+				}
+				subcategoryTotals[entry.subcategory] += entry.value;
+			});
+
+			// Convert to report format
+			const datasets = Object.entries(subcategoryTotals)
+				.map(([subcategory, total]) => ({
+					label: subcategory,
+					data: total,
+					date: dateLabel,
+				}))
+				.sort((a, b) => b.data - a.data); // Sort by total descending
+
+			return {
+				datasets,
+			};
+		},
+	},
+
+	reportSumByPeriod: {
+		help: "Report: Sum categories by time period (for table view)",
+		exec: ({
+			categoriesToSelect,
+			input,
+		}: {
+			categoriesToSelect: string[];
+			input: { [key: string]: IInput[] };
+		}): IReportMultiData => {
+			const labels = Object.keys(input);
+			const data = labels.map((label) => {
+				return input[label]
+					.filter((entry) => categoriesToSelect.includes(entry.category))
+					.reduce((acc, current) => {
+						acc += current.value;
+						return acc;
+					}, 0);
+			});
+
+			return {
+				datasets: {
+					label: categoriesToSelect.join(" + "),
+					data,
+					labels,
+				},
+			};
+		},
+	},
 };

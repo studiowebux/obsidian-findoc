@@ -1,4 +1,4 @@
-import { App, Notice, PluginSettingTab, Setting, debounce } from "obsidian";
+import { App, debounce, Notice, PluginSettingTab, Setting } from "obsidian";
 import FinDocPlugin from "main";
 import { idToText } from "utils";
 import loadIcons from "loadIcons";
@@ -17,7 +17,7 @@ export default class SettingsTab extends PluginSettingTab {
 	}
 
 	// Helper function for common button styles
-	private styleButton(button: HTMLElement, extraStyles = ''): void {
+	private styleButton(button: HTMLElement, extraStyles = ""): void {
 		button.style.cssText = `
 			margin-bottom: 10px;
 			padding: 6px 12px;
@@ -49,7 +49,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 	// Helper function for button container styles
 	private getButtonContainerStyles(): string {
-		return 'display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;';
+		return "display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;";
 	}
 
 	createNewColorBtn(): HTMLElement {
@@ -78,7 +78,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 	createReloadModelsBtn(): HTMLElement {
 		const btn = this.containerEl.createEl("button");
-		this.styleButton(btn, 'background: var(--text-warning); color: white;');
+		this.styleButton(btn);
 		btn.id = "reloadModels";
 		btn.innerText = "Load Default Models (clears custom models)";
 		btn.onClickEvent(async () => {
@@ -118,7 +118,7 @@ export default class SettingsTab extends PluginSettingTab {
 			.setName("Documentation")
 			.addButton((button) => {
 				button.buttonEl.innerHTML =
-					"<a style='margin: 0 auto;' href='https://studiowebux.github.io/obsidian-plugins-docs/docs/category/plugin-financial-doc/'>Link to Documentation</a>";
+					"<a style='margin: 0 auto;' href='https://studiowebux.github.io/obsidian-findoc/'>Link to Documentation</a>";
 				button.buttonEl.classList.add("findoc-documentation-btn");
 			});
 
@@ -129,7 +129,7 @@ export default class SettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("CSV Save debounce")
 			.setDesc(
-				"Timeout to trigger the CSV saving process (Value must be greater than 500 and less than 5000)"
+				"Timeout to trigger the CSV saving process (Value must be greater than 500 and less than 5000)",
 			)
 			.addText((text) => {
 				text.setValue(this.plugin.settings.debounce.toString());
@@ -146,7 +146,7 @@ export default class SettingsTab extends PluginSettingTab {
 						this.plugin.settings.debounce = value;
 						await this.plugin.saveSettings();
 						new Notice("Debounce Updated !");
-					}, 500)
+					}, 500),
 				);
 			});
 
@@ -161,7 +161,7 @@ export default class SettingsTab extends PluginSettingTab {
 					this.plugin.settings.csvSeparator = value;
 					await this.plugin.saveSettings();
 					new Notice("CSV Separator Updated !");
-				}, 500)
+				}, 500),
 			);
 		});
 
@@ -178,7 +178,7 @@ export default class SettingsTab extends PluginSettingTab {
 						this.plugin.settings.useLastElementAsTemplate = value;
 						await this.plugin.saveSettings();
 						new Notice("Use Last Element as Template Updated !");
-					}, 500)
+					}, 500),
 				);
 			});
 
@@ -195,7 +195,7 @@ export default class SettingsTab extends PluginSettingTab {
 						this.plugin.settings.useAutocomplete = value;
 						await this.plugin.saveSettings();
 						new Notice("Use autocomplete Updated !");
-					}, 500)
+					}, 500),
 				);
 			});
 
@@ -206,7 +206,7 @@ export default class SettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Minimum characters to Match")
 			.setDesc(
-				"The minimum amount of characters to open the autocomplete popup"
+				"The minimum amount of characters to open the autocomplete popup",
 			)
 			.addText((text) => {
 				text.setValue(this.plugin.settings.minCharsToMatch.toString());
@@ -219,14 +219,14 @@ export default class SettingsTab extends PluginSettingTab {
 							parseInt(value) >= 10
 						) {
 							new Notice(
-								"Invalid amount, must be between 1 and 9"
+								"Invalid amount, must be between 1 and 9",
 							);
 							return;
 						}
 						this.plugin.settings.minCharsToMatch = parseInt(value);
 						await this.plugin.saveSettings();
 						new Notice("Minimum characters to Match Updated !");
-					}, 500)
+					}, 500),
 				);
 			});
 
@@ -237,7 +237,7 @@ export default class SettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("categories")
 			.setDesc(
-				"NOTE: Deleting Existing Category might break the workflow, be sure to dissociate the category from everywhere."
+				"NOTE: Deleting Existing Category might break the workflow, be sure to dissociate the category from everywhere.",
 			);
 		const typesSection = containerEl.createDiv();
 		typesSection.appendChild(this.createNewCategoryBtn());
@@ -246,17 +246,17 @@ export default class SettingsTab extends PluginSettingTab {
 		this.plugin.settings.categories.forEach((category, key) => {
 			new Setting(typesSection)
 				.setName(`Category`)
-				.addText(async (text) => {
+				.addText((text) => {
 					text.setValue(category);
 					text.onChange(
 						debounce(async (value: string) => {
 							this.plugin.settings.categories = Object.assign(
 								this.plugin.settings.categories,
-								{ [key]: value }
+								{ [key]: value },
 							);
 							await this.plugin.saveSettings();
 							new Notice("Category Updated !");
-						}, 1000)
+						}, 1000),
 					);
 					text.inputEl.onblur = () => {
 						this.display(); // Force refresh.
@@ -280,17 +280,19 @@ export default class SettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Models")
-			.setDesc("Models available - Create, edit, or delete models for different data views");
-		
+			.setDesc(
+				"Models available - Create, edit, or delete models for different data views",
+			);
+
 		const modelControlsDiv = containerEl.createDiv();
 		modelControlsDiv.classList.add("findoc-model-controls");
-		
+
 		// Model management buttons
 		const addModelBtn = modelControlsDiv.createEl("button");
 		addModelBtn.classList.add("findoc-btn-margin-right");
 		addModelBtn.innerText = "Add New Model";
 		addModelBtn.onclick = () => this.createNewModel();
-		
+
 		modelControlsDiv.appendChild(this.createReloadModelsBtn());
 
 		const div = containerEl.createDiv();
@@ -302,20 +304,23 @@ export default class SettingsTab extends PluginSettingTab {
 			const el = modelSection.createEl("h1");
 			el.innerText = "Model: " + name;
 			modelSection.classList.add("findoc-model-section");
-			
+
 			// Model management buttons
 			const modelHeaderDiv = modelSection.createDiv();
 			modelHeaderDiv.classList.add("findoc-model-header");
 			modelHeaderDiv.appendChild(el);
-			
+
 			const modelActionsDiv = modelHeaderDiv.createDiv();
 			modelActionsDiv.classList.add("findoc-model-actions");
-			
+
 			const duplicateBtn = modelActionsDiv.createEl("button");
 			duplicateBtn.innerText = "Duplicate";
-			duplicateBtn.classList.add("findoc-btn-small", "findoc-btn-margin-right");
+			duplicateBtn.classList.add(
+				"findoc-btn-small",
+				"findoc-btn-margin-right",
+			);
 			duplicateBtn.onclick = () => this.duplicateModel(key, model);
-			
+
 			const deleteBtn = modelActionsDiv.createEl("button");
 			deleteBtn.innerText = "Delete";
 			deleteBtn.classList.add("findoc-btn-small", "findoc-btn-danger");
@@ -324,55 +329,63 @@ export default class SettingsTab extends PluginSettingTab {
 			// Snippet examples section
 			const snippetSection = modelSection.createDiv();
 			snippetSection.classList.add("findoc-snippet-section");
-			
+
 			const snippetHeader = snippetSection.createEl("h4");
 			snippetHeader.innerText = "Usage Examples";
 			snippetHeader.classList.add("findoc-snippet-header");
-			
+
 			const snippetContainer = snippetSection.createDiv();
 			snippetContainer.classList.add("findoc-snippet-container");
-			
+
 			// Generate different snippet examples based on model output type
 			const snippets = this.generateSnippetsForModel(key, model);
 			snippets.forEach((snippet, index) => {
 				const snippetDiv = snippetContainer.createDiv();
 				snippetDiv.classList.add("findoc-snippet-item");
-				
+
 				// Add warning class for incompatible snippets
 				if (!snippet.compatible) {
 					snippetDiv.classList.add("findoc-snippet-warning");
 				}
-				
+
 				const snippetLabel = snippetDiv.createEl("span");
 				snippetLabel.classList.add("findoc-snippet-label");
 				snippetLabel.innerText = snippet.label;
-				
+
 				// Add warning text if present
 				if (snippet.warning) {
 					const warningSpan = snippetDiv.createEl("span");
 					warningSpan.classList.add("findoc-snippet-warning-text");
 					warningSpan.innerText = snippet.warning;
 				}
-				
+
 				const snippetCode = snippetDiv.createEl("code");
 				snippetCode.classList.add("findoc-snippet-code");
 				if (!snippet.compatible) {
 					snippetCode.classList.add("findoc-snippet-code-disabled");
 				}
 				snippetCode.innerText = snippet.code;
-				
+
 				const copyBtn = snippetDiv.createEl("button");
 				copyBtn.innerText = snippet.compatible ? "Copy" : "Info";
 				copyBtn.classList.add("findoc-btn-small", "findoc-btn-copy");
 				if (!snippet.compatible) {
 					copyBtn.classList.add("findoc-btn-disabled");
-					copyBtn.title = snippet.warning || "This view type is not compatible with this model";
+					copyBtn.title = snippet.warning ||
+						"This view type is not compatible with this model";
 				}
 				copyBtn.onclick = () => {
 					if (snippet.compatible) {
-						this.copyToClipboard(snippet.code, `${snippet.label} snippet copied!`);
+						this.copyToClipboard(
+							snippet.code,
+							`${snippet.label} snippet copied!`,
+						);
 					} else {
-						new Notice(snippet.warning || "This view type is not compatible with this model", 5000);
+						new Notice(
+							snippet.warning ||
+								"This view type is not compatible with this model",
+							5000,
+						);
 					}
 				};
 			});
@@ -391,7 +404,7 @@ export default class SettingsTab extends PluginSettingTab {
 						.filter((v) => v != null);
 
 					dropdown.setValue(
-						this.plugin.settings.models[key].dataSource
+						this.plugin.settings.models[key].dataSource,
 					);
 
 					dropdown.onChange(async (value) => {
@@ -405,7 +418,7 @@ export default class SettingsTab extends PluginSettingTab {
 			new Setting(modelSection)
 				.setName(`Data Source key for ${name}`)
 				.setDesc(
-					"Column to use when preparing the raw data. Modify this value exclusively when employing the `Split By` method for the data source."
+					"Column to use when preparing the raw data. Modify this value exclusively when employing the `Split By` method for the data source.",
 				)
 				.addDropdown((dropdown) => {
 					dropdown.addOption("category", "Category");
@@ -415,7 +428,7 @@ export default class SettingsTab extends PluginSettingTab {
 					dropdown.addOption("extra", "Extra");
 
 					dropdown.setValue(
-						this.plugin.settings.models[key].dataSourceKey
+						this.plugin.settings.models[key].dataSourceKey,
 					);
 
 					dropdown.onChange(async (value: IDataSourceKeys) => {
@@ -454,7 +467,7 @@ export default class SettingsTab extends PluginSettingTab {
 				.setName(`Begin at Zero for ${name}`)
 				.addToggle((toggle) => {
 					toggle.setValue(
-						this.plugin.settings.models[key].beginAtZero
+						this.plugin.settings.models[key].beginAtZero,
 					);
 					toggle.onChange(async (value) => {
 						this.plugin.settings.models[key].beginAtZero = value;
@@ -480,11 +493,13 @@ export default class SettingsTab extends PluginSettingTab {
 			chartLabelType.setAttribute("value", model.chartLabelType);
 			chartLabelType.onchange = async () => {
 				const selected = [];
-				for (const option of (
-					document.getElementById(
-						`chart-label-type-${key}`
-					) as HTMLSelectElement
-				).options as any) {
+				for (
+					const option of (
+						document.getElementById(
+							`chart-label-type-${key}`,
+						) as HTMLSelectElement
+					).options as any
+				) {
 					if (option.selected) {
 						selected.push(option.value);
 					}
@@ -500,7 +515,7 @@ export default class SettingsTab extends PluginSettingTab {
 					opt.value = labelType;
 					opt.innerText = labelType;
 					opt.selected = model.chartLabelType === labelType;
-				}
+				},
 			);
 
 			//
@@ -510,7 +525,7 @@ export default class SettingsTab extends PluginSettingTab {
 				.setDisabled(model.chartLabelType !== "custom")
 				.setName("Suffix")
 				.setDesc(
-					`Optional Suffix, only used when the chart label type is set to "custom"`
+					`Optional Suffix, only used when the chart label type is set to "custom"`,
 				)
 				.addText((text) => {
 					text.setValue(model.suffix);
@@ -519,7 +534,7 @@ export default class SettingsTab extends PluginSettingTab {
 							model.suffix = value || "";
 							await this.plugin.saveSettings();
 							new Notice("Suffix Updated !");
-						}, 500)
+						}, 500),
 					);
 				});
 
@@ -566,7 +581,7 @@ export default class SettingsTab extends PluginSettingTab {
 				.setDisabled(model.output !== "generateDifference")
 				.setName("Values")
 				.setDesc(
-					`Comma delimited list of two values.\nOnly used when the output is set to "generateDifference".\nExample: "Income, Expenses" will produce: Income - Expenses`
+					`Comma delimited list of two values.\nOnly used when the output is set to "generateDifference".\nExample: "Income, Expenses" will produce: Income - Expenses`,
 				)
 				.addText((text) => {
 					text.setValue(model.values);
@@ -575,7 +590,7 @@ export default class SettingsTab extends PluginSettingTab {
 							model.values = value || "";
 							await this.plugin.saveSettings();
 							new Notice("Values Updated !");
-						}, 500)
+						}, 500),
 					);
 				});
 			modelSection.createEl("hr");
@@ -600,7 +615,7 @@ export default class SettingsTab extends PluginSettingTab {
 							this.plugin.settings.colors[key] = value;
 							await this.plugin.saveSettings();
 							new Notice("Color Updated !");
-						}, 500)
+						}, 500),
 					);
 				})
 				.addExtraButton((btn) => {
@@ -621,11 +636,11 @@ export default class SettingsTab extends PluginSettingTab {
 	 */
 	async createNewModel() {
 		const modelName = await this.promptForModelName();
-		if (!modelName || modelName.trim() === '') {
+		if (!modelName || modelName.trim() === "") {
 			return;
 		}
 
-		const sanitizedName = modelName.toLowerCase().replace(/[^a-z0-9]/g, '');
+		const sanitizedName = modelName.toLowerCase().replace(/[^a-z0-9]/g, "");
 		if (this.plugin.settings.models[sanitizedName]) {
 			new Notice(`Model "${sanitizedName}" already exists!`);
 			return;
@@ -639,7 +654,7 @@ export default class SettingsTab extends PluginSettingTab {
 			beginAtZero: true,
 			chartLabelType: "money",
 			dataSourceKey: "timestamp",
-			values: ""
+			values: "",
 		};
 
 		await this.plugin.saveSettings();
@@ -651,12 +666,17 @@ export default class SettingsTab extends PluginSettingTab {
 	 * Duplicate an existing model
 	 */
 	async duplicateModel(originalKey: string, originalModel: any) {
-		const newModelName = await this.promptForModelName(`Copy of ${originalKey}`);
-		if (!newModelName || newModelName.trim() === '') {
+		const newModelName = await this.promptForModelName(
+			`Copy of ${originalKey}`,
+		);
+		if (!newModelName || newModelName.trim() === "") {
 			return;
 		}
 
-		const sanitizedName = newModelName.toLowerCase().replace(/[^a-z0-9]/g, '');
+		const sanitizedName = newModelName.toLowerCase().replace(
+			/[^a-z0-9]/g,
+			"",
+		);
 		if (this.plugin.settings.models[sanitizedName]) {
 			new Notice(`Model "${sanitizedName}" already exists!`);
 			return;
@@ -670,7 +690,7 @@ export default class SettingsTab extends PluginSettingTab {
 			beginAtZero: originalModel.beginAtZero,
 			chartLabelType: originalModel.chartLabelType,
 			dataSourceKey: originalModel.dataSourceKey,
-			values: originalModel.values || ""
+			values: originalModel.values || "",
 		};
 
 		await this.plugin.saveSettings();
@@ -696,16 +716,17 @@ export default class SettingsTab extends PluginSettingTab {
 	/**
 	 * Prompt user for model name
 	 */
-	async promptForModelName(defaultName: string = ''): Promise<string | null> {
+	async promptForModelName(defaultName: string = ""): Promise<string | null> {
 		return new Promise((resolve) => {
-			const modal = document.createElement('div');
-			modal.style.cssText = this.getModalStyles() + 'width: 300px; z-index: 10000;';
+			const modal = document.createElement("div");
+			modal.style.cssText = this.getModalStyles() +
+				"width: 300px; z-index: 10000;";
 
-			const title = modal.createEl('h3');
-			title.innerText = 'Enter Model Name';
+			const title = modal.createEl("h3");
+			title.innerText = "Enter Model Name";
 
-			const input = modal.createEl('input');
-			input.type = 'text';
+			const input = modal.createEl("input");
+			input.type = "text";
 			input.value = defaultName;
 			input.style.cssText = `
 				width: 100%;
@@ -721,26 +742,29 @@ export default class SettingsTab extends PluginSettingTab {
 			const buttonsDiv = modal.createDiv();
 			buttonsDiv.style.cssText = this.getButtonContainerStyles();
 
-			const cancelBtn = buttonsDiv.createEl('button');
-			cancelBtn.innerText = 'Cancel';
-			this.styleButton(cancelBtn, 'margin-bottom: 0;');
+			const cancelBtn = buttonsDiv.createEl("button");
+			cancelBtn.innerText = "Cancel";
+			this.styleButton(cancelBtn, "margin-bottom: 0;");
 			cancelBtn.onclick = () => {
 				modal.remove();
 				resolve(null);
 			};
 
-			const okBtn = buttonsDiv.createEl('button');
-			okBtn.innerText = 'OK';
-			this.styleButton(okBtn, 'background: var(--interactive-accent); color: var(--text-on-accent); margin-bottom: 0;');
+			const okBtn = buttonsDiv.createEl("button");
+			okBtn.innerText = "OK";
+			this.styleButton(
+				okBtn,
+				"background: var(--interactive-accent); color: var(--text-on-accent); margin-bottom: 0;",
+			);
 			okBtn.onclick = () => {
 				modal.remove();
 				resolve(input.value);
 			};
 
-			input.addEventListener('keydown', (e) => {
-				if (e.key === 'Enter') {
+			input.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") {
 					okBtn.click();
-				} else if (e.key === 'Escape') {
+				} else if (e.key === "Escape") {
 					cancelBtn.click();
 				}
 			});
@@ -756,39 +780,44 @@ export default class SettingsTab extends PluginSettingTab {
 	 */
 	async confirmDelete(modelKey: string): Promise<boolean> {
 		return new Promise((resolve) => {
-			const modal = document.createElement('div');
-			modal.style.cssText = this.getModalStyles() + 'width: 350px; z-index: 10000;';
+			const modal = document.createElement("div");
+			modal.style.cssText = this.getModalStyles() +
+				"width: 350px; z-index: 10000;";
 
-			const title = modal.createEl('h3');
-			title.innerText = 'Confirm Deletion';
-			title.style.color = 'var(--text-error)';
+			const title = modal.createEl("h3");
+			title.innerText = "Confirm Deletion";
+			title.style.color = "var(--text-error)";
 
-			const message = modal.createEl('p');
-			message.innerText = `Are you sure you want to delete the model "${modelKey}"? This action cannot be undone.`;
+			const message = modal.createEl("p");
+			message.innerText =
+				`Are you sure you want to delete the model "${modelKey}"? This action cannot be undone.`;
 
 			const buttonsDiv = modal.createDiv();
 			buttonsDiv.style.cssText = this.getButtonContainerStyles();
 
-			const cancelBtn = buttonsDiv.createEl('button');
-			cancelBtn.innerText = 'Cancel';
-			this.styleButton(cancelBtn, 'margin-bottom: 0;');
+			const cancelBtn = buttonsDiv.createEl("button");
+			cancelBtn.innerText = "Cancel";
+			this.styleButton(cancelBtn, "margin-bottom: 0;");
 			cancelBtn.onclick = () => {
 				modal.remove();
 				resolve(false);
 			};
 
-			const deleteBtn = buttonsDiv.createEl('button');
-			deleteBtn.innerText = 'Delete';
-			this.styleButton(deleteBtn, 'background: var(--text-error); color: var(--text-on-accent); margin-bottom: 0;');
+			const deleteBtn = buttonsDiv.createEl("button");
+			deleteBtn.innerText = "Delete";
+			this.styleButton(
+				deleteBtn,
+				"background: var(--text-error); color: var(--text-on-accent); margin-bottom: 0;",
+			);
 			deleteBtn.onclick = () => {
 				modal.remove();
 				resolve(true);
 			};
 
-			document.addEventListener('keydown', function escHandler(e) {
-				if (e.key === 'Escape') {
+			document.addEventListener("keydown", function escHandler(e) {
+				if (e.key === "Escape") {
 					cancelBtn.click();
-					document.removeEventListener('keydown', escHandler);
+					document.removeEventListener("keydown", escHandler);
 				}
 			});
 
@@ -800,11 +829,19 @@ export default class SettingsTab extends PluginSettingTab {
 	/**
 	 * Generate snippet examples for a model
 	 */
-	generateSnippetsForModel(modelKey: string, model: any): { label: string; code: string; compatible: boolean; warning?: string }[] {
+	generateSnippetsForModel(
+		modelKey: string,
+		model: any,
+	): {
+		label: string;
+		code: string;
+		compatible: boolean;
+		warning?: string;
+	}[] {
 		const snippets = [];
 		const isReportOnly = this.isReportModel(model);
 		const isChartCompatible = !isReportOnly;
-		
+
 		// Basic chart snippet
 		if (isChartCompatible) {
 			snippets.push({
@@ -815,15 +852,16 @@ filename: your-data.csv
 model: ${modelKey}
 view: chart
 title: ${this.toTitleCase(modelKey)}
-\`\`\``
+\`\`\``,
 			});
 		} else {
 			snippets.push({
 				label: "Chart",
 				compatible: false,
 				warning: "⚠️ Not compatible - Use report/table views instead",
-				code: `<!-- Model "${modelKey}" is not compatible with chart views -->
-<!-- Use view: report or view: table instead -->`
+				code:
+					`<!-- Model "${modelKey}" is not compatible with chart views -->
+<!-- Use view: report or view: table instead -->`,
 			});
 		}
 
@@ -837,15 +875,16 @@ filename: your-data.csv
 model: ${modelKey}
 view: pie
 title: ${this.toTitleCase(modelKey)} Distribution
-\`\`\``
+\`\`\``,
 			});
 		} else if (!isChartCompatible) {
 			snippets.push({
 				label: "Pie Chart",
 				compatible: false,
 				warning: "⚠️ Report model - Not compatible with pie charts",
-				code: `<!-- Model "${modelKey}" is not compatible with pie charts -->
-<!-- Use view: report or view: table instead -->`
+				code:
+					`<!-- Model "${modelKey}" is not compatible with pie charts -->
+<!-- Use view: report or view: table instead -->`,
 			});
 		}
 
@@ -859,7 +898,7 @@ filename: your-data.csv
 model: ${modelKey}
 view: radar
 title: ${this.toTitleCase(modelKey)} Radar
-\`\`\``
+\`\`\``,
 			});
 		}
 
@@ -873,7 +912,7 @@ filename: your-data.csv
 model: ${modelKey}
 view: report
 date: 2025-09-01
-\`\`\``
+\`\`\``,
 			});
 
 			snippets.push({
@@ -884,7 +923,7 @@ filename: your-data.csv
 model: ${modelKey}
 view: table
 date: 2025-09-01
-\`\`\``
+\`\`\``,
 			});
 		}
 
@@ -896,10 +935,10 @@ date: 2025-09-01
 	 */
 	isSuitableForPieChart(model: any): boolean {
 		// Models with "PerTypes" output or subcategory/category splits work well as pie charts
-		return model.output.includes('PerTypes') || 
-			   model.dataSource.includes('Subcategory') || 
-			   model.dataSource.includes('Category') ||
-			   model.dataSource.includes('ValueRange');
+		return model.output.includes("PerTypes") ||
+			model.dataSource.includes("Subcategory") ||
+			model.dataSource.includes("Category") ||
+			model.dataSource.includes("ValueRange");
 	}
 
 	/**
@@ -907,17 +946,17 @@ date: 2025-09-01
 	 */
 	isSuitableForRadarChart(model: any): boolean {
 		// Similar to pie charts, models with multiple categories work well as radar
-		return model.categories && model.categories.length > 2 && 
-			   (model.output.includes('generateSumDataSet') || 
-			    model.output.includes('PerTypes'));
+		return model.categories && model.categories.length > 2 &&
+			(model.output.includes("generateSumDataSet") ||
+				model.output.includes("PerTypes"));
 	}
 
 	/**
 	 * Check if model is a report model
 	 */
 	isReportModel(model: any): boolean {
-		return model.output.includes('report') || 
-			   model.output.includes('getLastValue');
+		return model.output.includes("report") ||
+			model.output.includes("getLastValue");
 	}
 
 	/**
@@ -925,7 +964,7 @@ date: 2025-09-01
 	 */
 	toTitleCase(str: string): string {
 		return str
-			.replace(/([A-Z])/g, ' $1') // Add space before capitals
+			.replace(/([A-Z])/g, " $1") // Add space before capitals
 			.replace(/^./, (char) => char.toUpperCase()) // Capitalize first letter
 			.replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
 	}
@@ -939,14 +978,14 @@ date: 2025-09-01
 			new Notice(message, 3000);
 		} catch (err) {
 			// Fallback for browsers that don't support clipboard API
-			const textArea = document.createElement('textarea');
+			const textArea = document.createElement("textarea");
 			textArea.value = text;
-			textArea.style.position = 'fixed';
-			textArea.style.left = '-999999px';
-			textArea.style.top = '-999999px';
+			textArea.style.position = "fixed";
+			textArea.style.left = "-999999px";
+			textArea.style.top = "-999999px";
 			document.body.appendChild(textArea);
 			textArea.select();
-			document.execCommand('copy');
+			document.execCommand("copy");
 			textArea.remove();
 			new Notice(message, 3000);
 		}

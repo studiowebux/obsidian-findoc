@@ -9,14 +9,17 @@ Track your income, expenses, and portfolio directly in Obsidian with simple CSV 
 
 ## Create Your First Financial File
 
-1. Click the FinDoc ribbon icon (or use File menu)
-2. Name your file (e.g., `finances.csv`)
-3. File opens with these columns ready to use:
-    - Category
-    - Subcategory
-    - Value
-    - TimeStamp
-    - Extra
+**Two ways to create a CSV file:**
+
+1. **Ribbon icon:** Click the FinDoc icon in the left sidebar (creates file in vault root)
+2. **File menu:** Right-click a folder → FinDoc: Create new CSV file (creates file in selected folder)
+
+Name your file (e.g., `finances.csv`). The file opens with these columns:
+- Category
+- Subcategory
+- Value
+- TimeStamp
+- Extra
 
 ## Add Your Data
 
@@ -109,7 +112,7 @@ view: report
 
 **Sort by date:** Click "Sort by Date" button
 
-**Add row:** Click "+" button (copies your last row as template)
+**Add row:** Click "Add New Row" button (copies your last row as template)
 
 **Remove row:** Click trash icon on any row
 
@@ -126,7 +129,7 @@ Create separate CSV files for different purposes:
 - `income.csv` - salary and side income
 - `mortgage.csv` - loan tracking
 
-Reference them in your charts:
+**Reference a single file:**
 
 ````markdown
 ```findoc
@@ -135,6 +138,18 @@ model: portfolio
 view: chart
 ```
 ````
+
+**Combine multiple files in one chart:**
+
+````markdown
+```findoc
+filename: expenses.csv, income.csv, mortgage.csv
+model: incomeVsExpenses
+view: chart
+```
+````
+
+Files are merged before processing. Data is concatenated and sorted by timestamp.
 
 ## Categories
 

@@ -84,25 +84,17 @@ For datasets > 50 rows:
 
 ### Security
 
-- Input sanitization via `sanitizeTextInput()`
-- Sandboxed math evaluation
-- XSS prevention
-- Safe icon rendering
+All input is validated and sanitized to keep your data safe.
 
 ## Configuration
 
-Settings affect CSV editor:
+Customize the CSV editor in Settings → FinDoc:
 
-```typescript
-{
-  categories: string[],             	// Dropdown options
-  useAutocomplete: boolean,         	// Enable autocomplete
-  minCharsToMatch: number,        		// Min chars for autocomplete
-  useLastElementAsTemplate: boolean, 	// Template for new rows
-  debounce: string,              		// Save delay (ms)
-  csvSeparator: string           		// Field delimiter
-}
-```
+- **Categories:** Options in the dropdown menu
+- **Autocomplete:** Enable/disable and set minimum characters
+- **New row template:** Use last row as template for new entries
+- **Save delay:** How long to wait before auto-saving
+- **CSV separator:** Column delimiter (comma or semicolon)
 
 ## Keyboard & Mobile
 
@@ -115,11 +107,11 @@ Settings affect CSV editor:
 
 ### Timestamp Validation
 
-Invalid dates handled gracefully:
+Invalid dates are handled gracefully:
 
-- NaN timestamps sorted to end
-- ISO format expected (YYYY-MM-DD)
-- Display shows min/max dates in info section
+- Entries with invalid dates are sorted to the end
+- Use format: YYYY-MM-DD (e.g., 2025-01-15)
+- Info section shows earliest and latest dates in your data
 
 ### Value Validation
 
@@ -129,13 +121,23 @@ Invalid dates handled gracefully:
 
 ## Backup System
 
-Automatic backups before:
+The CSV editor automatically maintains the last 10 backups of your file state. Backups are created before destructive operations.
 
-- Sort operations
+**Automatic backups created before:**
+- Sort by date operations
 - Bulk modifications
 - Data transformations
 
-Manual restore via "Restore Backup" button shows available backup count.
+**Manual restore:**
+
+Click "Restore Backup" button to undo recent changes. The system maintains a rolling history of your last 10 file states. Each restore removes one backup from the history.
+
+**Use cases:**
+- Accidentally sorted data incorrectly
+- Made unwanted bulk changes
+- Need to revert to a previous state
+
+Backups are session-based and cleared when you close the file.
 
 ## CSV Format Compatibility
 

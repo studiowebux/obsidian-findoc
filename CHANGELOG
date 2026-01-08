@@ -1,3 +1,34 @@
+### V0.8.5 - Beta - 2026-01-07
+
+**Features**
+
+- Added 25+ new default models:
+  - Expense charts: expensesWeekly, expensesAnnually
+  - Pie charts: expensesByCategory, incomeByCategory, portfolioByCategory, dividendByCategory
+  - Combined: byCategory, incomeVsExpenses, netIncome
+  - Debt/Loan: debt, loan
+  - Dividends: dividendQuarterly
+  - Reports: expensesReport, incomeReport, debtReport, dividendReport
+  - Subcategory tables: expensesBySubcategoryTable, incomeBySubcategoryTable, portfolioBySubcategoryTable, dividendBySubcategoryTable, debtBySubcategoryTable
+  - Period sum tables: expensesWeeklyTable, expensesMonthlyTable, expensesQuarterlyTable, expensesAnnuallyTable
+- Added 2 new output functions:
+  - reportBySubcategory: Group and sum by subcategory name
+  - reportSumByPeriod: Sum categories by time period for tables
+
+**Bug Fixes**
+
+- Fixed empty row appearing at end of CSV files with trailing newlines
+
+**QOL**
+
+- Updated documentation link in settings
+
+**Documentation**
+
+- Added Model Reference page with complete model list
+- Reorganized Charts and Reports with common patterns
+- Expanded backup system and multi-file documentation
+
 ### V0.8.2 - Beta - 2025-09-05
 
 - Set 100 Colors

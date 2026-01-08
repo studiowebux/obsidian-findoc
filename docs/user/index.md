@@ -12,9 +12,10 @@ Everything you need to track your finances in Obsidian.
 New to FinDoc? Start here:
 
 1. [Getting Started](getting-started.md) - Create your first financial file and charts
-2. [Charts and Reports](charts-and-reports.md) - See all available visualizations
-3. [CSV Editor Guide](csv-editor.md) - Learn to edit your data efficiently
-4. [Settings](settings.md) - Customize categories and behavior
+2. [Charts and Reports](charts-and-reports.md) - Common visualization examples
+3. [Model Reference](model-reference.md) - Complete list of all available models
+4. [CSV Editor Guide](csv-editor.md) - Learn to edit your data efficiently
+5. [Settings](settings.md) - Customize categories and behavior
 
 ## Common Tasks
 
