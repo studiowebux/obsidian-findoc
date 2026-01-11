@@ -1,3 +1,32 @@
+### V0.9.0 - Beta - 2026-01-08
+
+**Features**
+
+- Added `snapshotCategories` field to models
+  - Configures which categories use "last value" logic (snapshot/balance data)
+  - Categories not listed sum all entries (transaction data like dividends, income)
+  - Enables mixed models with both snapshot and transaction categories
+- Updated output functions:
+  - `getLastValuePerTypeForCurrentMonth`: supports snapshotCategories
+  - `reportBySubcategory`: supports snapshotCategories
+  - `generateDailyDataSet`: supports snapshotCategories for daily charts
+- Updated default models:
+  - portfolioReport, portfolioReportTable: Portfolio, Debt, Loan as snapshots
+  - portfolioBySubcategoryTable: Portfolio as snapshot
+  - debtReport, debtBySubcategoryTable: Debt and Loan as snapshots
+  - expensesReport, incomeReport, dividendReport: sum all entries
+  - expensesBySubcategoryTable, incomeBySubcategoryTable, dividendBySubcategoryTable: sum all
+  - Daily chart models: expenses, income, portfolio, mortgage, mortgageRate, debt, loan, all
+
+**Bug Fixes**
+
+- Fixed portfolio report showing incorrect values for transaction categories
+- Fixed dividend totals only showing last value instead of sum
+- Fixed subcategory tables showing sum instead of last value for snapshot data
+- Fixed daily charts showing only last value for transaction categories (income, expenses)
+
+---
+
 ### V0.8.5 - Beta - 2026-01-07
 
 **Features**

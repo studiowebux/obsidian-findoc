@@ -140,6 +140,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		expenses: {
 			dataSource: "splitDailyDates",
 			categories: ["Income", "House Expenses", "Expenses"],
+			snapshotCategories: [],
 			output: "generateDailyDataSet",
 			beginAtZero: true,
 			chartLabelType: "money",
@@ -158,6 +159,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		portfolio: {
 			dataSource: "splitDailyDates",
 			categories: ["Portfolio"],
+			snapshotCategories: ["Portfolio"],
 			output: "generateDailyDataSet",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -176,6 +178,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		income: {
 			dataSource: "splitDailyDates",
 			categories: ["Income"],
+			snapshotCategories: [],
 			output: "generateDailyDataSet",
 			beginAtZero: true,
 			chartLabelType: "money",
@@ -194,6 +197,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 				"House Expenses",
 				"Expenses",
 			],
+			snapshotCategories: ["Portfolio", "Mortgage", "Mortgage Rate"],
 			output: "generateDailyDataSet",
 			beginAtZero: true,
 			chartLabelType: "money",
@@ -203,6 +207,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		mortgage: {
 			dataSource: "splitDailyDates",
 			categories: ["Mortgage"],
+			snapshotCategories: ["Mortgage"],
 			output: "generateDailyDataSet",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -212,6 +217,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		mortgageRate: {
 			dataSource: "splitDailyDates",
 			categories: ["Mortgage Rate"],
+			snapshotCategories: ["Mortgage Rate"],
 			output: "generateDailyDataSet",
 			beginAtZero: true,
 			chartLabelType: "percent",
@@ -237,7 +243,9 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 				"House Expenses",
 				"Dividend",
 				"Debt",
+				"Loan",
 			],
+			snapshotCategories: ["Portfolio", "Debt", "Loan"],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -457,7 +465,9 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 				"House Expenses",
 				"Dividend",
 				"Debt",
+				"Loan",
 			],
+			snapshotCategories: ["Portfolio", "Debt", "Loan"],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -613,6 +623,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		debt: {
 			dataSource: "splitDailyDates",
 			categories: ["Debt"],
+			snapshotCategories: ["Debt"],
 			output: "generateDailyDataSet",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -623,6 +634,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		loan: {
 			dataSource: "splitDailyDates",
 			categories: ["Loan"],
+			snapshotCategories: ["Loan"],
 			output: "generateDailyDataSet",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -647,6 +659,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		expensesReport: {
 			dataSource: "splitByYearMonth",
 			categories: ["House Expenses", "Expenses"],
+			snapshotCategories: [],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -657,6 +670,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		incomeReport: {
 			dataSource: "splitByYearMonth",
 			categories: ["Income"],
+			snapshotCategories: [],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -667,6 +681,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		debtReport: {
 			dataSource: "splitByYearMonth",
 			categories: ["Debt", "Loan"],
+			snapshotCategories: ["Debt", "Loan"],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -677,6 +692,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		dividendReport: {
 			dataSource: "splitByYearMonth",
 			categories: ["Dividend"],
+			snapshotCategories: [],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -689,6 +705,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		expensesBySubcategoryTable: {
 			dataSource: "splitByYearMonth",
 			categories: ["House Expenses", "Expenses"],
+			snapshotCategories: [],
 			output: "reportBySubcategory",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -699,6 +716,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		incomeBySubcategoryTable: {
 			dataSource: "splitByYearMonth",
 			categories: ["Income"],
+			snapshotCategories: [],
 			output: "reportBySubcategory",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -709,6 +727,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		portfolioBySubcategoryTable: {
 			dataSource: "splitByYearMonth",
 			categories: ["Portfolio"],
+			snapshotCategories: ["Portfolio"],
 			output: "reportBySubcategory",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -719,6 +738,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		dividendBySubcategoryTable: {
 			dataSource: "splitByYearMonth",
 			categories: ["Dividend"],
+			snapshotCategories: [],
 			output: "reportBySubcategory",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -729,6 +749,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		debtBySubcategoryTable: {
 			dataSource: "splitByYearMonth",
 			categories: ["Debt", "Loan"],
+			snapshotCategories: ["Debt", "Loan"],
 			output: "reportBySubcategory",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -781,5 +802,5 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 	colors: COLORS,
 	debounce: "1000",
 	csvSeparator: ",",
-	version: "0.8.3",
+	version: "0.9.0",
 };

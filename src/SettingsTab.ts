@@ -52,30 +52,6 @@ export default class SettingsTab extends PluginSettingTab {
 		return "display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;";
 	}
 
-	createNewColorBtn(): HTMLElement {
-		const btn = this.containerEl.createEl("button");
-		this.styleButton(btn);
-		btn.id = "newColor";
-		btn.innerText = "Add New Color";
-		btn.onClickEvent(() => {
-			this.plugin.settings.colors.unshift("#ffffff");
-			this.display();
-		});
-		return btn;
-	}
-
-	createNewCategoryBtn(): HTMLElement {
-		const btn = this.containerEl.createEl("button");
-		this.styleButton(btn);
-		btn.id = "newType";
-		btn.innerText = "Add New Category";
-		btn.onClickEvent(() => {
-			this.plugin.settings.categories.unshift("");
-			this.display();
-		});
-		return btn;
-	}
-
 	createReloadModelsBtn(): HTMLElement {
 		const btn = this.containerEl.createEl("button");
 		this.styleButton(btn);
@@ -235,44 +211,50 @@ export default class SettingsTab extends PluginSettingTab {
 		//
 
 		new Setting(containerEl)
-			.setName("categories")
-			.setDesc(
-				"NOTE: Deleting Existing Category might break the workflow, be sure to dissociate the category from everywhere.",
-			);
-		const typesSection = containerEl.createDiv();
-		typesSection.appendChild(this.createNewCategoryBtn());
-		typesSection.classList.add("findoc-type-section");
+			.setName(`Categories (${this.plugin.settings.categories.length})`)
+			.setDesc("Transaction types for your CSV data. Click to edit, X to delete.");
 
-		this.plugin.settings.categories.forEach((category, key) => {
-			new Setting(typesSection)
-				.setName(`Category`)
-				.addText((text) => {
-					text.setValue(category);
-					text.onChange(
-						debounce(async (value: string) => {
-							this.plugin.settings.categories = Object.assign(
-								this.plugin.settings.categories,
-								{ [key]: value },
-							);
-							await this.plugin.saveSettings();
-							new Notice("Category Updated !");
-						}, 1000),
-					);
-					text.inputEl.onblur = () => {
-						this.display(); // Force refresh.
-					};
-				})
-				.addExtraButton((btn) => {
-					btn.setTooltip("Delete Category");
-					btn.setIcon("trash");
-					btn.onClick(async () => {
-						this.plugin.settings.categories.splice(key, 1);
-						await this.plugin.saveSettings();
-						new Notice("Category Deleted !");
-						this.display();
-					});
-				});
+		const categorySection = containerEl.createDiv();
+		categorySection.classList.add("findoc-category-section");
+
+		// Category tags
+		const categoryGrid = categorySection.createDiv();
+		categoryGrid.classList.add("findoc-category-grid");
+
+		this.plugin.settings.categories.forEach((category, idx) => {
+			const tag = categoryGrid.createDiv();
+			tag.classList.add("findoc-category-tag");
+
+			const tagInput = tag.createEl("input");
+			tagInput.type = "text";
+			tagInput.value = category;
+			tagInput.classList.add("findoc-category-input");
+			tagInput.addEventListener("change", async (e) => {
+				const target = e.target as HTMLInputElement;
+				this.plugin.settings.categories[idx] = target.value;
+				await this.plugin.saveSettings();
+			});
+
+			const deleteBtn = tag.createEl("button");
+			deleteBtn.innerText = "x";
+			deleteBtn.classList.add("findoc-category-delete");
+			deleteBtn.title = "Delete";
+			deleteBtn.onclick = async () => {
+				this.plugin.settings.categories.splice(idx, 1);
+				await this.plugin.saveSettings();
+				this.display();
+			};
 		});
+
+		// Add category button
+		const addCategoryBtn = categoryGrid.createDiv();
+		addCategoryBtn.classList.add("findoc-category-tag", "findoc-category-add");
+		addCategoryBtn.innerText = "+ Add";
+		addCategoryBtn.onclick = async () => {
+			this.plugin.settings.categories.push("New Category");
+			await this.plugin.saveSettings();
+			this.display();
+		};
 
 		//
 		// MODELS
@@ -295,98 +277,97 @@ export default class SettingsTab extends PluginSettingTab {
 
 		modelControlsDiv.appendChild(this.createReloadModelsBtn());
 
+		const modelCount = Object.keys(this.plugin.settings.models).length;
+		const modelsHeader = containerEl.createEl("h3");
+		modelsHeader.innerText = `Models (${modelCount})`;
+		modelsHeader.classList.add("findoc-models-header");
+
+		// Search input for filtering models
+		const searchContainer = containerEl.createDiv();
+		searchContainer.classList.add("findoc-model-search");
+		const searchInput = searchContainer.createEl("input");
+		searchInput.type = "text";
+		searchInput.placeholder = "Search models...";
+		searchInput.classList.add("findoc-model-search-input");
+
 		const div = containerEl.createDiv();
 		div.classList.add("findoc-models-container");
 
-		Object.entries(this.plugin.settings.models).forEach(([key, model]) => {
+		// Store references to model elements for filtering
+		const modelElements: { key: string; name: string; element: HTMLElement }[] = [];
+
+		// Sort models alphabetically
+		const sortedModels = Object.entries(this.plugin.settings.models)
+			.sort(([a], [b]) => a.localeCompare(b));
+
+		sortedModels.forEach(([key, model]) => {
 			const name = idToText(key);
-			const modelSection = div.createDiv();
-			const el = modelSection.createEl("h1");
-			el.innerText = "Model: " + name;
-			modelSection.classList.add("findoc-model-section");
 
-			// Model management buttons
-			const modelHeaderDiv = modelSection.createDiv();
-			modelHeaderDiv.classList.add("findoc-model-header");
-			modelHeaderDiv.appendChild(el);
+			// Use details/summary for collapsible sections
+			const details = div.createEl("details");
+			details.classList.add("findoc-model-details");
 
-			const modelActionsDiv = modelHeaderDiv.createDiv();
+			const summary = details.createEl("summary");
+			summary.classList.add("findoc-model-summary");
+
+			const summaryContent = summary.createEl("span");
+			summaryContent.innerText = name;
+			summaryContent.classList.add("findoc-model-name");
+
+			// Actions in summary (stop propagation to prevent toggle)
+			const modelActionsDiv = summary.createEl("span");
 			modelActionsDiv.classList.add("findoc-model-actions");
 
 			const duplicateBtn = modelActionsDiv.createEl("button");
 			duplicateBtn.innerText = "Duplicate";
-			duplicateBtn.classList.add(
-				"findoc-btn-small",
-				"findoc-btn-margin-right",
-			);
-			duplicateBtn.onclick = () => this.duplicateModel(key, model);
+			duplicateBtn.classList.add("findoc-btn-small");
+			duplicateBtn.onclick = (e) => {
+				e.stopPropagation();
+				this.duplicateModel(key, model);
+			};
 
 			const deleteBtn = modelActionsDiv.createEl("button");
 			deleteBtn.innerText = "Delete";
 			deleteBtn.classList.add("findoc-btn-small", "findoc-btn-danger");
-			deleteBtn.onclick = () => this.deleteModel(key);
+			deleteBtn.onclick = (e) => {
+				e.stopPropagation();
+				this.deleteModel(key);
+			};
+
+			// Content section (inside details, after summary)
+			const modelSection = details.createDiv();
+			modelSection.classList.add("findoc-model-content");
 
 			// Snippet examples section
 			const snippetSection = modelSection.createDiv();
 			snippetSection.classList.add("findoc-snippet-section");
 
 			const snippetHeader = snippetSection.createEl("h4");
-			snippetHeader.innerText = "Usage Examples";
+			snippetHeader.innerText = "Copy Snippet";
 			snippetHeader.classList.add("findoc-snippet-header");
 
 			const snippetContainer = snippetSection.createDiv();
 			snippetContainer.classList.add("findoc-snippet-container");
 
-			// Generate different snippet examples based on model output type
+			// Generate compatible snippet examples
 			const snippets = this.generateSnippetsForModel(key, model);
-			snippets.forEach((snippet, index) => {
+			snippets.forEach((snippet) => {
 				const snippetDiv = snippetContainer.createDiv();
 				snippetDiv.classList.add("findoc-snippet-item");
-
-				// Add warning class for incompatible snippets
-				if (!snippet.compatible) {
-					snippetDiv.classList.add("findoc-snippet-warning");
-				}
 
 				const snippetLabel = snippetDiv.createEl("span");
 				snippetLabel.classList.add("findoc-snippet-label");
 				snippetLabel.innerText = snippet.label;
 
-				// Add warning text if present
-				if (snippet.warning) {
-					const warningSpan = snippetDiv.createEl("span");
-					warningSpan.classList.add("findoc-snippet-warning-text");
-					warningSpan.innerText = snippet.warning;
-				}
-
 				const snippetCode = snippetDiv.createEl("code");
 				snippetCode.classList.add("findoc-snippet-code");
-				if (!snippet.compatible) {
-					snippetCode.classList.add("findoc-snippet-code-disabled");
-				}
 				snippetCode.innerText = snippet.code;
 
 				const copyBtn = snippetDiv.createEl("button");
-				copyBtn.innerText = snippet.compatible ? "Copy" : "Info";
-				copyBtn.classList.add("findoc-btn-small", "findoc-btn-copy");
-				if (!snippet.compatible) {
-					copyBtn.classList.add("findoc-btn-disabled");
-					copyBtn.title = snippet.warning ||
-						"This view type is not compatible with this model";
-				}
+				copyBtn.innerText = "Copy";
+				copyBtn.classList.add("findoc-btn-copy");
 				copyBtn.onclick = () => {
-					if (snippet.compatible) {
-						this.copyToClipboard(
-							snippet.code,
-							`${snippet.label} snippet copied!`,
-						);
-					} else {
-						new Notice(
-							snippet.warning ||
-								"This view type is not compatible with this model",
-							5000,
-						);
-					}
+					this.copyToClipboard(snippet.code, `${snippet.label} snippet copied!`);
 				};
 			});
 
@@ -593,42 +574,75 @@ export default class SettingsTab extends PluginSettingTab {
 						}, 500),
 					);
 				});
-			modelSection.createEl("hr");
+			// Track element for filtering
+			modelElements.push({ key, name, element: details });
+		});
+
+		// Search handler
+		searchInput.addEventListener("input", () => {
+			const query = searchInput.value.toLowerCase().trim();
+			let visibleCount = 0;
+			modelElements.forEach(({ name, element }) => {
+				const matches = query === "" || name.toLowerCase().includes(query);
+				element.style.display = matches ? "" : "none";
+				if (matches) visibleCount++;
+			});
+			modelsHeader.innerText = query
+				? `Models (${visibleCount}/${modelCount})`
+				: `Models (${modelCount})`;
 		});
 
 		//
 		//  COLORS
 		//
 
-		new Setting(containerEl).setName("Colors");
+		new Setting(containerEl)
+			.setName(`Colors (${this.plugin.settings.colors.length})`)
+			.setDesc("Color palette for charts. Click a color to edit, X to delete.");
+
 		const colorSection = containerEl.createDiv();
-		colorSection.appendChild(this.createNewColorBtn());
 		colorSection.classList.add("findoc-color-section");
 
-		this.plugin.settings.colors.forEach((color, key) => {
-			new Setting(colorSection)
-				.setName(`Color #${key}`)
-				.addColorPicker(async (colorPicker) => {
-					colorPicker.setValue(color);
-					colorPicker.onChange(
-						debounce(async (value: string) => {
-							this.plugin.settings.colors[key] = value;
-							await this.plugin.saveSettings();
-							new Notice("Color Updated !");
-						}, 500),
-					);
-				})
-				.addExtraButton((btn) => {
-					btn.setTooltip("Delete Color");
-					btn.setIcon("trash");
-					btn.onClick(async () => {
-						this.plugin.settings.colors.splice(key, 1);
-						await this.plugin.saveSettings();
-						new Notice("Color Deleted !");
-						this.display();
-					});
-				});
+		// Color grid
+		const colorGrid = colorSection.createDiv();
+		colorGrid.classList.add("findoc-color-grid");
+
+		this.plugin.settings.colors.forEach((color, idx) => {
+			const colorItem = colorGrid.createDiv();
+			colorItem.classList.add("findoc-color-item");
+
+			const colorSwatch = colorItem.createEl("input");
+			colorSwatch.type = "color";
+			colorSwatch.value = color;
+			colorSwatch.classList.add("findoc-color-swatch");
+			colorSwatch.title = `Color ${idx + 1}: ${color}`;
+			colorSwatch.addEventListener("change", async (e) => {
+				const target = e.target as HTMLInputElement;
+				this.plugin.settings.colors[idx] = target.value;
+				await this.plugin.saveSettings();
+			});
+
+			const deleteBtn = colorItem.createEl("button");
+			deleteBtn.innerText = "x";
+			deleteBtn.classList.add("findoc-color-delete");
+			deleteBtn.title = "Delete color";
+			deleteBtn.onclick = async () => {
+				this.plugin.settings.colors.splice(idx, 1);
+				await this.plugin.saveSettings();
+				this.display();
+			};
 		});
+
+		// Add color button
+		const addColorBtn = colorGrid.createDiv();
+		addColorBtn.classList.add("findoc-color-item", "findoc-color-add");
+		addColorBtn.innerText = "+";
+		addColorBtn.title = "Add new color";
+		addColorBtn.onclick = async () => {
+			this.plugin.settings.colors.push("#888888");
+			await this.plugin.saveSettings();
+			this.display();
+		};
 	}
 
 	/**
@@ -827,104 +841,47 @@ export default class SettingsTab extends PluginSettingTab {
 	}
 
 	/**
-	 * Generate snippet examples for a model
+	 * Generate snippet examples for a model (only compatible snippets)
 	 */
 	generateSnippetsForModel(
 		modelKey: string,
 		model: any,
-	): {
-		label: string;
-		code: string;
-		compatible: boolean;
-		warning?: string;
-	}[] {
-		const snippets = [];
+	): { label: string; code: string }[] {
+		const snippets: { label: string; code: string }[] = [];
 		const isReportOnly = this.isReportModel(model);
-		const isChartCompatible = !isReportOnly;
 
-		// Basic chart snippet
-		if (isChartCompatible) {
-			snippets.push({
-				label: "Chart",
-				compatible: true,
-				code: `\`\`\`findoc
-filename: your-data.csv
-model: ${modelKey}
-view: chart
-title: ${this.toTitleCase(modelKey)}
-\`\`\``,
-			});
-		} else {
-			snippets.push({
-				label: "Chart",
-				compatible: false,
-				warning: "⚠️ Not compatible - Use report/table views instead",
-				code:
-					`<!-- Model "${modelKey}" is not compatible with chart views -->
-<!-- Use view: report or view: table instead -->`,
-			});
-		}
-
-		// Pie chart snippet (if suitable for pie charts)
-		if (this.isSuitableForPieChart(model) && isChartCompatible) {
-			snippets.push({
-				label: "Pie Chart",
-				compatible: true,
-				code: `\`\`\`findoc
-filename: your-data.csv
-model: ${modelKey}
-view: pie
-title: ${this.toTitleCase(modelKey)} Distribution
-\`\`\``,
-			});
-		} else if (!isChartCompatible) {
-			snippets.push({
-				label: "Pie Chart",
-				compatible: false,
-				warning: "⚠️ Report model - Not compatible with pie charts",
-				code:
-					`<!-- Model "${modelKey}" is not compatible with pie charts -->
-<!-- Use view: report or view: table instead -->`,
-			});
-		}
-
-		// Radar chart snippet (if suitable)
-		if (this.isSuitableForRadarChart(model) && isChartCompatible) {
-			snippets.push({
-				label: "Radar Chart",
-				compatible: true,
-				code: `\`\`\`findoc
-filename: your-data.csv
-model: ${modelKey}
-view: radar
-title: ${this.toTitleCase(modelKey)} Radar
-\`\`\``,
-			});
-		}
-
-		// Report/Table snippets for report models
 		if (isReportOnly) {
+			// Report models: only table/report views
 			snippets.push({
-				label: "Text Report",
-				compatible: true,
-				code: `\`\`\`findoc
-filename: your-data.csv
-model: ${modelKey}
-view: report
-date: 2025-09-01
-\`\`\``,
-			});
-
-			snippets.push({
-				label: "Table Report",
-				compatible: true,
+				label: "Table",
 				code: `\`\`\`findoc
 filename: your-data.csv
 model: ${modelKey}
 view: table
-date: 2025-09-01
 \`\`\``,
 			});
+		} else {
+			// Chart models
+			snippets.push({
+				label: "Chart",
+				code: `\`\`\`findoc
+filename: your-data.csv
+model: ${modelKey}
+view: chart
+\`\`\``,
+			});
+
+			// Add pie chart if suitable
+			if (this.isSuitableForPieChart(model)) {
+				snippets.push({
+					label: "Pie",
+					code: `\`\`\`findoc
+filename: your-data.csv
+model: ${modelKey}
+view: pie
+\`\`\``,
+				});
+			}
 		}
 
 		return snippets;

@@ -11,6 +11,7 @@ export type generatorFuncParams1 = {
 	categoriesToSelect: string[];
 	input: { [key: string]: IInput[] };
 	date: string | undefined;
+	snapshotCategories?: string[];
 };
 export type generatorFuncParams2 = {
 	categoriesToSelect: string[];
