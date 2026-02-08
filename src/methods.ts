@@ -239,22 +239,27 @@ export const functions: {
 	},
 
 	generateDailyDataSet: {
-		help: "Generate Daily Dataset",
+		help: "Generate Daily Dataset (last value for snapshots, sum for transactions)",
 		exec: ({
 			categoriesToSelect,
 			input,
 			labels,
 			categories,
 			colors,
+			snapshotCategories = undefined,
 		}: {
 			categoriesToSelect: string[];
 			input: { [key: string]: IInput[] };
 			labels: string[];
 			categories: string[];
 			colors: string[];
+			snapshotCategories: string[] | undefined;
 		}): IDataset => {
 			const nonEmptyLabels: string[] = [];
 			const usableColors = [...colors];
+			const snapshotSet = new Set(snapshotCategories || []);
+			const isSnapshotMode = snapshotCategories === undefined;
+
 			const datasets = categories.map((category) => {
 				const color = usableColors[0];
 				usableColors.shift();
@@ -276,14 +281,19 @@ export const functions: {
 								)
 								.reduce(
 									(
-										categories: { [key: string]: number },
+										acc: { [key: string]: number },
 										current: IInput
 									) => {
-										if (!categories[current.subcategory])
-											categories[current.subcategory] = 0;
-										categories[current.subcategory] =
-											current.value;
-										return categories;
+										if (!acc[current.subcategory])
+											acc[current.subcategory] = 0;
+										// Snapshot categories use last value, others sum
+										const useSnapshot = isSnapshotMode || snapshotSet.has(current.category);
+										if (useSnapshot) {
+											acc[current.subcategory] = current.value;
+										} else {
+											acc[current.subcategory] += current.value;
+										}
+										return acc;
 									},
 									{}
 								);
@@ -366,49 +376,55 @@ export const functions: {
 	},
 
 	getLastValuePerTypeForCurrentMonth: {
-		help: "Get Last Value Per Category For Current Month",
+		help: "Get last value for snapshot categories, sum all for others",
 		exec: ({
 			categoriesToSelect,
 			input,
 			date = undefined,
+			snapshotCategories = undefined,
 		}: {
 			categoriesToSelect: string[];
 			input: { [key: string]: IInput[] };
 			date: string | undefined;
+			snapshotCategories: string[] | undefined;
 		}): IReportData => {
-			// TODO: at some point this Date must be configurable.
 			let d = new Date();
 			if (date) d = new Date(date);
 
 			// Select current month dataset
-			const lastInput =
-				input[`${d.getUTCFullYear()}-${getMonth(d)}`] || [];
-			// TECH. DEBT !
-			// Keeping only last reference for a month.
-			// When this is : Portfolio category.
+			const monthKey = `${d.getUTCFullYear()}-${getMonth(d)}`;
+			const lastInput = input[monthKey] || [];
+
+			// For snapshot categories: keep only last value per subcategory
+			const snapshotSet = new Set(snapshotCategories || []);
+			const isSnapshotMode = snapshotCategories === undefined;
+
+			// Build deduped entries for snapshot categories
 			const _lastInput: IInput[] = [];
-			lastInput.reverse().forEach((li) => {
-				if (li.category !== "Portfolio") _lastInput.push(li);
-				if (
-					_lastInput.every(
-						(_li) => _li.subcategory !== li.subcategory
-					)
-				)
+			const seen = new Set<string>();
+
+			// Reverse to process most recent first
+			[...lastInput].reverse().forEach((li) => {
+				const key = `${li.category}-${li.subcategory}`;
+				if (!seen.has(key)) {
+					seen.add(key);
 					_lastInput.push(li);
+				}
 			});
 
 			const datasets = categoriesToSelect.map((category) => {
-				// Get Last item from our input array
+				// If snapshotCategories is undefined (backwards compat) or category is in snapshotCategories
+				// use last value per subcategory, otherwise sum all
+				const useSnapshot = isSnapshotMode || snapshotSet.has(category);
+
+				const entries = useSnapshot
+					? _lastInput.filter((entry) => entry.category === category)
+					: lastInput.filter((entry) => entry.category === category);
+
 				return {
 					label: category,
-					// Get the sum of all data for the specified category
-					data: _lastInput
-						.filter((entry) => entry.category === category)
-						.reduce((acc, current) => {
-							acc += current.value;
-							return acc;
-						}, 0),
-					date: `${d.getUTCFullYear()}-${getMonth(d)}`,
+					data: entries.reduce((acc, current) => acc + current.value, 0),
+					date: monthKey,
 				};
 			});
 
@@ -967,6 +983,116 @@ export const functions: {
 					totalDividends: dividendEntries.reduce((sum, entry) => sum + entry.value, 0),
 					totalPayments: dividendEntries.length
 				}
+			};
+		},
+	},
+
+	reportBySubcategory: {
+		help: "Report: Group by subcategory (last value for snapshots, sum for transactions)",
+		exec: ({
+			categoriesToSelect,
+			input,
+			date = undefined,
+			snapshotCategories = undefined,
+		}: {
+			categoriesToSelect: string[];
+			input: { [key: string]: IInput[] };
+			date: string | undefined;
+			snapshotCategories: string[] | undefined;
+		}): IReportData => {
+			let allEntries: IInput[];
+			let dateLabel: string;
+
+			if (date) {
+				// Filter for specific month
+				const d = new Date(date);
+				const monthKey = `${d.getUTCFullYear()}-${getMonth(d)}`;
+				allEntries = (input[monthKey] || [])
+					.filter(entry => categoriesToSelect.includes(entry.category));
+				dateLabel = monthKey;
+			} else {
+				// Use all entries across all time periods
+				allEntries = Object.values(input)
+					.flat()
+					.filter(entry => categoriesToSelect.includes(entry.category));
+				dateLabel = "All Time";
+			}
+
+			const snapshotSet = new Set(snapshotCategories || []);
+			const isSnapshotMode = snapshotCategories === undefined;
+
+			// For snapshot categories, keep only last value per subcategory
+			let processedEntries: IInput[];
+			if (isSnapshotMode) {
+				// Backwards compat: no snapshotCategories = sum all
+				processedEntries = allEntries;
+			} else {
+				// Separate snapshot and transaction entries
+				const snapshotEntries = allEntries.filter(e => snapshotSet.has(e.category));
+				const transactionEntries = allEntries.filter(e => !snapshotSet.has(e.category));
+
+				// Dedupe snapshot entries - keep last per subcategory
+				const seen = new Set<string>();
+				const dedupedSnapshot: IInput[] = [];
+				[...snapshotEntries].reverse().forEach((entry) => {
+					if (!seen.has(entry.subcategory)) {
+						seen.add(entry.subcategory);
+						dedupedSnapshot.push(entry);
+					}
+				});
+
+				processedEntries = [...dedupedSnapshot, ...transactionEntries];
+			}
+
+			// Group by subcategory and sum values
+			const subcategoryTotals: { [subcategory: string]: number } = {};
+			processedEntries.forEach(entry => {
+				if (!subcategoryTotals[entry.subcategory]) {
+					subcategoryTotals[entry.subcategory] = 0;
+				}
+				subcategoryTotals[entry.subcategory] += entry.value;
+			});
+
+			// Convert to report format
+			const datasets = Object.entries(subcategoryTotals)
+				.map(([subcategory, total]) => ({
+					label: subcategory,
+					data: total,
+					date: dateLabel,
+				}))
+				.sort((a, b) => b.data - a.data); // Sort by total descending
+
+			return {
+				datasets,
+			};
+		},
+	},
+
+	reportSumByPeriod: {
+		help: "Report: Sum categories by time period (for table view)",
+		exec: ({
+			categoriesToSelect,
+			input,
+		}: {
+			categoriesToSelect: string[];
+			input: { [key: string]: IInput[] };
+		}): IReportMultiData => {
+			const labels = Object.keys(input);
+			const data = labels.map((label) => {
+				return input[label]
+					.filter((entry) => categoriesToSelect.includes(entry.category))
+					.reduce((acc, current) => {
+						acc += current.value;
+						return acc;
+					}, 0);
+			});
+
+			return {
+				datasets: {
+					label: categoriesToSelect.join(" + "),
+					data,
+					labels,
+				},
 			};
 		},
 	},

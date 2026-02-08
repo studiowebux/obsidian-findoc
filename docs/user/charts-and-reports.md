@@ -1,265 +1,211 @@
 ---
 title: Charts and Reports
-description: Available charts and reports you can use
+description: Common chart and report examples
 ---
 
 # Charts and Reports
 
-Use these pre-built models in your code blocks to visualize your financial data.
+Quick examples of the most common visualizations. See [Model Reference](model-reference.md) for complete list of all models.
 
-## Expense Charts
+## Common Patterns
 
-**Daily expenses:**
+### Basic Charts
 
-```findoc
-filename: finances.csv
-model: expenses
-view: chart
-```
-
-**Monthly expenses:**
-
+**Track monthly expenses:**
 ```findoc
 filename: finances.csv
 model: expensesMonthly
 view: chart
 ```
 
-**Quarterly expenses:**
-
-```findoc
-filename: finances.csv
-model: expensesQuarterly
-view: chart
-```
-
-**Expense breakdown (pie):**
-
-```findoc
-filename: finances.csv
-model: expensesByCategory
-view: pie
-```
-
-## Income Charts
-
-**Daily income:**
-
-```findoc
-filename: finances.csv
-model: income
-view: chart
-```
-
-**Weekly income:**
-
-```findoc
-filename: finances.csv
-model: incomeWeekly
-view: chart
-```
-
-**Yearly income:**
-
-```findoc
-filename: finances.csv
-model: incomeYearly
-view: chart
-```
-
-**Income breakdown (pie):**
-
-```findoc
-filename: finances.csv
-model: incomeByCategory
-view: pie
-```
-
-## Combined Charts
-
-**Income vs Expenses:**
-
+**Income vs expenses:**
 ```findoc
 filename: finances.csv
 model: incomeVsExpenses
 view: chart
 ```
 
-**Net income (income minus expenses):**
-
-```findoc
-filename: finances.csv
-model: netIncome
-view: chart
-```
-
-**All categories monthly:**
-
-```findoc
-filename: finances.csv
-model: byCategory
-view: chart
-```
-
-## Portfolio Charts
-
-**Portfolio value over time:**
-
+**Portfolio value:**
 ```findoc
 filename: finances.csv
 model: portfolio
 view: chart
 ```
 
-**Portfolio distribution (pie):**
+### Pie Charts
 
+**Expense breakdown by category:**
+```findoc
+filename: finances.csv
+model: expensesByCategory
+view: pie
+```
+
+**Portfolio allocation:**
 ```findoc
 filename: finances.csv
 model: portfolioByCategory
 view: pie
 ```
 
-**Value ranges:**
+### Table Reports
 
-```findoc
-filename: finances.csv
-model: portfolioByValueRange
-view: pie
-```
-
-## Debt and Loan Charts
-
-**Debt tracking:**
-
-```findoc
-filename: finances.csv
-model: debt
-view: chart
-```
-
-**Loan balance:**
-
-```findoc
-filename: finances.csv
-model: loan
-view: chart
-```
-
-**Mortgage tracking:**
-
-```findoc
-filename: finances.csv
-model: mortgage
-view: chart
-```
-
-## Dividend Charts
-
-**Monthly dividends:**
-
-```findoc
-filename: finances.csv
-model: dividend
-view: chart
-```
-
-**Quarterly dividends:**
-
-```findoc
-filename: finances.csv
-model: dividendQuarterly
-view: chart
-```
-
-**Dividend by category (pie):**
-
-```findoc
-filename: finances.csv
-model: dividendByCategory
-view: pie
-```
-
-## Reports (Tables)
-
-**Portfolio summary:**
-
+**Current month portfolio snapshot:**
 ```findoc
 filename: finances.csv
 model: portfolioReport
 view: table
 ```
 
-**Expense summary:**
-
+**Expenses grouped by name:**
 ```findoc
 filename: finances.csv
-model: expensesReport
+model: expensesBySubcategoryTable
 view: table
 ```
 
-**Income summary:**
-
+**Monthly expense totals:**
 ```findoc
 filename: finances.csv
-model: incomeReport
+model: expensesMonthlyTable
 view: table
 ```
 
-**Debt summary:**
+## Advanced Features
 
+### Multiple CSV Files
+
+Combine data from multiple files:
 ```findoc
-filename: finances.csv
-model: debtReport
-view: table
-```
-
-**Dividend summary:**
-
-```findoc
-filename: finances.csv
-model: dividendReport
-view: table
-```
-
-## Chart Types
-
-Change the `view` parameter to get different visualizations:
-
-**Line chart (default):**
-
-```findoc
+filename: expenses.csv, income.csv, portfolio.csv
+model: incomeVsExpenses
 view: chart
 ```
 
-**Pie chart:**
+Files are merged before processing.
 
+### Filter by Date
+
+Show specific month (table/report views only):
 ```findoc
-view: pie
-```
-
-**Radar chart:**
-
-```findoc
-view: radar
-```
-
-**Text report:**
-
-```findoc
-view: report
-```
-
-**Table report:**
-
-```findoc
+filename: finances.csv
+model: portfolioReport
 view: table
+date: 2024-12-01
 ```
 
-## Add a Title
+Without `date`, shows current month. With `date`, shows historical snapshot.
+
+For subcategory tables:
+```findoc
+filename: finances.csv
+model: expensesBySubcategoryTable
+view: table
+date: 2025-01-01
+```
+
+Without `date`, shows all-time totals. With `date`, shows only that month.
+
+### Custom Titles
 
 ```findoc
 filename: finances.csv
 model: incomeVsExpenses
 view: chart
-title: My Income vs Expenses 2025
+title: My 2025 Financial Overview
+```
+
+### Chart Information Footer
+
+Each chart includes a collapsible footer with details about how the chart was generated. Click the toggle button to view:
+- Model name used
+- Source CSV file(s)
+- Processing details (for troubleshooting)
+
+## View Types
+
+Change visualization type with `view` parameter:
+
+**Line chart:**
+```findoc
+view: chart
+```
+
+**Pie chart:**
+```findoc
+view: pie
+```
+
+**Radar chart:**
+```findoc
+view: radar
+```
+
+**Table:**
+```findoc
+view: table
+```
+
+**Text report:**
+```findoc
+view: report
+```
+
+Not all models support all views. Chart models work with chart/pie/radar. Report models work with table/report only.
+
+## Quick Reference by Category
+
+### Expenses
+- **expensesMonthly** - Monthly totals (chart)
+- **expensesWeekly** - Weekly totals (chart)
+- **expensesQuarterly** - Quarterly totals (chart)
+- **expensesAnnually** - Annual totals (chart)
+- **expensesByCategory** - Breakdown by name (pie)
+- **expensesBySubcategoryTable** - Grouped by name (table)
+- **expensesMonthlyTable** - Monthly totals (table)
+
+### Income
+- **income** - Daily totals (chart)
+- **incomeWeekly** - Weekly totals (chart)
+- **incomeYearly** - Annual totals (chart)
+- **incomeByCategory** - Breakdown by source (pie)
+- **incomeBySubcategoryTable** - Grouped by source (table)
+
+### Portfolio
+- **portfolio** - Value over time (chart)
+- **portfolioByCategory** - Distribution by holding (pie)
+- **portfolioReport** - Current snapshot (table)
+- **portfolioBySubcategoryTable** - Grouped by holding (table)
+
+### Combined
+- **incomeVsExpenses** - Compare income/expenses (chart)
+- **netIncome** - Net income calculation (chart)
+- **byCategory** - All categories (chart)
+
+### Dividends
+- **dividend** - Monthly totals (chart)
+- **dividendQuarterly** - Quarterly totals (chart)
+- **dividendByCategory** - Breakdown by symbol (pie)
+- **dividendAnalysisReport** - Comprehensive metrics (table)
+
+### Debt
+- **debt** - Balance over time (chart)
+- **loan** - Loan balance (chart)
+- **mortgage** - Mortgage balance (chart)
+- **debtReport** - Current summary (table)
+
+See [Model Reference](model-reference.md) for complete list with all parameters and options.
+
+## Migration Note
+
+**Deprecated parameter:** `type` still works but use `view` instead:
+
+Old:
+```findoc
+type: chart
+```
+
+New:
+```findoc
+view: chart
 ```

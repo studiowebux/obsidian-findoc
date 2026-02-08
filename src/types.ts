@@ -76,6 +76,7 @@ export type IModel = {
 	dataSource: string;
 	dataSourceKey: IDataSourceKeys;
 	categories: string[]; // categories to include in the model
+	snapshotCategories?: string[]; // categories that use last value (snapshot), others sum all
 	output: string;
 	beginAtZero: boolean;
 	chartLabelType: IChartLabelTypes;

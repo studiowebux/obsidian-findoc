@@ -41,7 +41,8 @@ export default class FinDocPlugin extends Plugin {
 	async loadSettings() {
 		const savedData = await this.loadData();
 
-		// Deep merge settings, especially models
+		// Deep merge settings - new default models are automatically added,
+		// user's custom models are preserved (they override defaults)
 		this.settings = {
 			...DEFAULT_SETTINGS,
 			...(savedData || {}),
@@ -51,64 +52,11 @@ export default class FinDocPlugin extends Plugin {
 			}
 		};
 
-		// Run migration for new models
-		await this.migrateSettings();
-
-		// Save settings if data.json was empty/missing
-		if (!savedData || Object.keys(savedData).length === 0) {
-			await this.saveSettings();
-		}
-	}
-
-	async migrateSettings() {
-		const currentVersion = "0.8.0";
-		const savedVersion = this.settings.version || "0.7.4";
-
-		// Only migrate if version is older than current OR if any new models are missing
-		const newModelNames = [
-			'expensesQuarterly', 'incomeWeekly', 'portfolioByValueRange', 
-			'expensesMonthlyBreakdown', 'allCategoriesBreakdown',
-			'portfolioReportTable', 'quarterlyIncomeExpenseReport', 'weeklyExpenseAnalysis',
-			'dividendMonthlyBySymbol', 'dividendCumulativeBySymbol', 'dividendAnalysisReport', 'dividendQuarterlyBySymbol'
-		];
-		
-		const missingModels = newModelNames.filter(name => !this.settings.models[name]);
-		const needsMigration = this.compareVersions(savedVersion, currentVersion) < 0 || missingModels.length > 0;
-		
-		if (needsMigration) {
-			// Add new models from v0.8.0 that don't exist in user settings
-			const newModels = {
-				expensesQuarterly: DEFAULT_SETTINGS.models.expensesQuarterly,
-				incomeWeekly: DEFAULT_SETTINGS.models.incomeWeekly,
-				portfolioByValueRange: DEFAULT_SETTINGS.models.portfolioByValueRange,
-				expensesBySubcategory: DEFAULT_SETTINGS.models.expensesBySubcategory,
-				allCategoriesBreakdown: DEFAULT_SETTINGS.models.allCategoriesBreakdown,
-				portfolioReportTable: DEFAULT_SETTINGS.models.portfolioReportTable,
-				quarterlyIncomeExpenseReport: DEFAULT_SETTINGS.models.quarterlyIncomeExpenseReport,
-				weeklyExpenseAnalysis: DEFAULT_SETTINGS.models.weeklyExpenseAnalysis,
-				dividendMonthlyBySymbol: DEFAULT_SETTINGS.models.dividendMonthlyBySymbol,
-				dividendCumulativeBySymbol: DEFAULT_SETTINGS.models.dividendCumulativeBySymbol,
-				dividendAnalysisReport: DEFAULT_SETTINGS.models.dividendAnalysisReport,
-				dividendQuarterlyBySymbol: DEFAULT_SETTINGS.models.dividendQuarterlyBySymbol,
-			};
-
-			let addedCount = 0;
-			for (const [modelName, modelConfig] of Object.entries(newModels)) {
-				if (!this.settings.models[modelName]) {
-					this.settings.models[modelName] = modelConfig;
-					addedCount++;
-				}
-			}
-
-			// Update version
+		// Update version and save if needed
+		const currentVersion = "0.9.0";
+		if (!savedData || this.settings.version !== currentVersion) {
 			this.settings.version = currentVersion;
-			
-			// Save updated settings
 			await this.saveSettings();
-
-			if (addedCount > 0) {
-				new Notice(`Findoc v${currentVersion}: Added ${addedCount} new models!`, 5000);
-			}
 		}
 	}
 

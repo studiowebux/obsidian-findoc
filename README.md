@@ -34,6 +34,7 @@
 ## Installation and Usage
 
 [Full Documentation is available here](https://studiowebux.github.io/obsidian-findoc/)
+
 ---
 
 ## Changelog

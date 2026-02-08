@@ -55,6 +55,7 @@ function processing(
 		categories,
 		colors,
 		values: model.values ? model.values.split(",") : [],
+		snapshotCategories: model.snapshotCategories,
 	});
 
 	// Check if output is compatible with chart rendering

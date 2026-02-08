@@ -140,6 +140,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		expenses: {
 			dataSource: "splitDailyDates",
 			categories: ["Income", "House Expenses", "Expenses"],
+			snapshotCategories: [],
 			output: "generateDailyDataSet",
 			beginAtZero: true,
 			chartLabelType: "money",
@@ -158,6 +159,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		portfolio: {
 			dataSource: "splitDailyDates",
 			categories: ["Portfolio"],
+			snapshotCategories: ["Portfolio"],
 			output: "generateDailyDataSet",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -176,6 +178,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		income: {
 			dataSource: "splitDailyDates",
 			categories: ["Income"],
+			snapshotCategories: [],
 			output: "generateDailyDataSet",
 			beginAtZero: true,
 			chartLabelType: "money",
@@ -194,6 +197,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 				"House Expenses",
 				"Expenses",
 			],
+			snapshotCategories: ["Portfolio", "Mortgage", "Mortgage Rate"],
 			output: "generateDailyDataSet",
 			beginAtZero: true,
 			chartLabelType: "money",
@@ -203,6 +207,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		mortgage: {
 			dataSource: "splitDailyDates",
 			categories: ["Mortgage"],
+			snapshotCategories: ["Mortgage"],
 			output: "generateDailyDataSet",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -212,6 +217,7 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 		mortgageRate: {
 			dataSource: "splitDailyDates",
 			categories: ["Mortgage Rate"],
+			snapshotCategories: ["Mortgage Rate"],
 			output: "generateDailyDataSet",
 			beginAtZero: true,
 			chartLabelType: "percent",
@@ -237,7 +243,9 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 				"House Expenses",
 				"Dividend",
 				"Debt",
+				"Loan",
 			],
+			snapshotCategories: ["Portfolio", "Debt", "Loan"],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -379,6 +387,26 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 			values: "",
 		},
 
+		expensesAnnually: {
+			dataSource: "splitByYear",
+			categories: ["House Expenses", "Expenses"],
+			output: "generateSumDataSet",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		expensesWeekly: {
+			dataSource: "splitByWeek",
+			categories: ["House Expenses", "Expenses"],
+			output: "generateSumDataSet",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
 		incomeWeekly: {
 			dataSource: "splitByWeek",
 			categories: ["Income"],
@@ -437,7 +465,9 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 				"House Expenses",
 				"Dividend",
 				"Debt",
+				"Loan",
 			],
+			snapshotCategories: ["Portfolio", "Debt", "Loan"],
 			output: "getLastValuePerTypeForCurrentMonth",
 			beginAtZero: false,
 			chartLabelType: "money",
@@ -507,9 +537,270 @@ export const DEFAULT_SETTINGS: IPluginSettings = {
 			dataSourceKey: "timestamp",
 			values: "",
 		},
+
+		// CATEGORY BREAKDOWN MODELS (for pie charts)
+
+		expensesByCategory: {
+			dataSource: "splitByCategory",
+			categories: ["House Expenses", "Expenses"],
+			output: "generateSumDataSetPerTypes",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "subcategory",
+			values: "",
+		},
+
+		incomeByCategory: {
+			dataSource: "splitByCategory",
+			categories: ["Income"],
+			output: "generateSumDataSetPerTypes",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "subcategory",
+			values: "",
+		},
+
+		portfolioByCategory: {
+			dataSource: "splitByCategory",
+			categories: ["Portfolio"],
+			output: "generateSumDataSetPerTypes",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "subcategory",
+			values: "",
+		},
+
+		dividendByCategory: {
+			dataSource: "splitByCategory",
+			categories: ["Dividend"],
+			output: "generateSumDataSetPerTypes",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "subcategory",
+			values: "",
+		},
+
+		byCategory: {
+			dataSource: "splitByYearMonth",
+			categories: [
+				"Portfolio",
+				"Income",
+				"House Expenses",
+				"Expenses",
+				"Dividend",
+			],
+			output: "generateSumDataSet",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		// INCOME VS EXPENSES MODELS
+
+		incomeVsExpenses: {
+			dataSource: "splitByYearMonth",
+			categories: ["Income", "House Expenses", "Expenses"],
+			output: "generateSumDataSet",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		netIncome: {
+			dataSource: "splitByYearMonth",
+			categories: ["Income", "Expenses", "House Expenses"],
+			output: "generateDifference",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "Income, Expenses",
+		},
+
+		// DEBT AND LOAN MODELS
+
+		debt: {
+			dataSource: "splitDailyDates",
+			categories: ["Debt"],
+			snapshotCategories: ["Debt"],
+			output: "generateDailyDataSet",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		loan: {
+			dataSource: "splitDailyDates",
+			categories: ["Loan"],
+			snapshotCategories: ["Loan"],
+			output: "generateDailyDataSet",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		// DIVIDEND MODELS
+
+		dividendQuarterly: {
+			dataSource: "splitByQuarter",
+			categories: ["Dividend"],
+			output: "generateSumDataSet",
+			beginAtZero: true,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		// REPORT MODELS
+
+		expensesReport: {
+			dataSource: "splitByYearMonth",
+			categories: ["House Expenses", "Expenses"],
+			snapshotCategories: [],
+			output: "getLastValuePerTypeForCurrentMonth",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		incomeReport: {
+			dataSource: "splitByYearMonth",
+			categories: ["Income"],
+			snapshotCategories: [],
+			output: "getLastValuePerTypeForCurrentMonth",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		debtReport: {
+			dataSource: "splitByYearMonth",
+			categories: ["Debt", "Loan"],
+			snapshotCategories: ["Debt", "Loan"],
+			output: "getLastValuePerTypeForCurrentMonth",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		dividendReport: {
+			dataSource: "splitByYearMonth",
+			categories: ["Dividend"],
+			snapshotCategories: [],
+			output: "getLastValuePerTypeForCurrentMonth",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		// SUBCATEGORY BREAKDOWN TABLE REPORTS
+
+		expensesBySubcategoryTable: {
+			dataSource: "splitByYearMonth",
+			categories: ["House Expenses", "Expenses"],
+			snapshotCategories: [],
+			output: "reportBySubcategory",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		incomeBySubcategoryTable: {
+			dataSource: "splitByYearMonth",
+			categories: ["Income"],
+			snapshotCategories: [],
+			output: "reportBySubcategory",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		portfolioBySubcategoryTable: {
+			dataSource: "splitByYearMonth",
+			categories: ["Portfolio"],
+			snapshotCategories: ["Portfolio"],
+			output: "reportBySubcategory",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		dividendBySubcategoryTable: {
+			dataSource: "splitByYearMonth",
+			categories: ["Dividend"],
+			snapshotCategories: [],
+			output: "reportBySubcategory",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		debtBySubcategoryTable: {
+			dataSource: "splitByYearMonth",
+			categories: ["Debt", "Loan"],
+			snapshotCategories: ["Debt", "Loan"],
+			output: "reportBySubcategory",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		// TIME PERIOD SUM TABLES
+
+		expensesWeeklyTable: {
+			dataSource: "splitByWeek",
+			categories: ["House Expenses", "Expenses"],
+			output: "reportSumByPeriod",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		expensesMonthlyTable: {
+			dataSource: "splitByYearMonth",
+			categories: ["House Expenses", "Expenses"],
+			output: "reportSumByPeriod",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		expensesQuarterlyTable: {
+			dataSource: "splitByQuarter",
+			categories: ["House Expenses", "Expenses"],
+			output: "reportSumByPeriod",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
+
+		expensesAnnuallyTable: {
+			dataSource: "splitByYear",
+			categories: ["House Expenses", "Expenses"],
+			output: "reportSumByPeriod",
+			beginAtZero: false,
+			chartLabelType: "money",
+			dataSourceKey: "timestamp",
+			values: "",
+		},
 	},
 	colors: COLORS,
 	debounce: "1000",
 	csvSeparator: ",",
-	version: "0.8.3",
+	version: "0.9.0",
 };

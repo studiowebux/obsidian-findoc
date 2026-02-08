@@ -28,10 +28,11 @@ function reporting(
 		categoriesToSelect: model.categories,
 		input: splitBy[model.dataSource].exec(json, model.dataSourceKey),
 		labels,
-		categories: model.categories, // Add categories
-		colors: [], // Add empty colors array for report functions
+		categories: model.categories,
+		colors: [],
 		date,
 		values: model.values ? model.values.split(",") : [],
+		snapshotCategories: model.snapshotCategories,
 	}) as IReportData;
 
 	return output;

@@ -15,17 +15,36 @@ Models define data transformation pipelines from CSV to charts/reports.
 
 ```typescript
 {
-  dataSource: string,        // Split function name
-  dataSourceKey: string,     // Key to split on (timestamp|category|subcategory|value|extra)
-  categories: string[],      // Categories to include
-  output: string,            // Generator function name
-  beginAtZero: boolean,      // Chart Y-axis starts at zero
-  chartLabelType: string,    // Label format (money|percent|generic|custom)
-  suffix?: string,           // Custom label suffix
-  date?: string,             // Optional date filter
-  values: string             // Comma-separated parameters for output function
+  dataSource: string,             // Split function name
+  dataSourceKey: string,          // Key to split on (timestamp|category|subcategory|value|extra)
+  categories: string[],           // Categories to include
+  snapshotCategories?: string[],  // Categories using last-value logic (optional)
+  output: string,                 // Generator function name
+  beginAtZero: boolean,           // Chart Y-axis starts at zero
+  chartLabelType: string,         // Label format (money|percent|generic|custom)
+  suffix?: string,                // Custom label suffix
+  date?: string,                  // Optional date filter
+  values: string                  // Comma-separated parameters for output function
 }
 ```
+
+### snapshotCategories Field
+
+Controls how `getLastValuePerTypeForCurrentMonth` processes each category:
+
+- **Snapshot categories** (listed in `snapshotCategories`): Keep only the last value per subcategory. Use for balance/portfolio data where you track current value.
+- **Transaction categories** (not listed): Sum all entries. Use for income, expenses, dividends where you want totals.
+
+Example:
+```typescript
+portfolioReport: {
+  categories: ["Portfolio", "Income", "Dividend", "Debt"],
+  snapshotCategories: ["Portfolio", "Debt"],  // These use last value
+  // Income and Dividend will sum all entries
+}
+```
+
+If `snapshotCategories` is omitted, all categories use last-value logic (backwards compatible).
 
 ## Built-in Models
 
@@ -103,12 +122,15 @@ Portfolio distribution by value ranges.
 
 #### `portfolioReport`
 
-Current month portfolio snapshot.
+Current month portfolio snapshot with mixed data types.
 
 - **Data Source**: `splitByYearMonth`
-- **Categories**: Portfolio, Income, Cotisation, Expenses, House Expenses, Dividend, Debt
+- **Categories**: Portfolio, Income, Cotisation, Expenses, House Expenses, Dividend, Debt, Loan
+- **Snapshot Categories**: Portfolio, Debt, Loan (use last value per subcategory)
 - **Output**: `getLastValuePerTypeForCurrentMonth`
 - **View**: report or table
+
+Portfolio, Debt, and Loan show current balances. Other categories sum all entries for the month.
 
 ### Mortgage Models
 
@@ -285,6 +307,7 @@ Weekly expense breakdown.
 
 Portfolio snapshot for current month (table view).
 
+- **Snapshot Categories**: Portfolio, Debt, Loan
 - **Output**: `getLastValuePerTypeForCurrentMonth`
 - **View**: table
 

@@ -14,6 +14,7 @@ description: Complete documentation navigation
 - [User Documentation](user/index.md)
   - [Getting Started](user/getting-started.md)
   - [Charts and Reports](user/charts-and-reports.md)
+  - [Model Reference](user/model-reference.md)
   - [CSV Editor Guide](user/csv-editor.md)
   - [Settings](user/settings.md)
 
